@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 
 interface AlertDialogProps {
   open: boolean;
@@ -19,28 +19,28 @@ export function AlertDialog({
   onConfirm,
   confirmText = 'ยืนยัน',
   cancelText = 'ยกเลิก',
-  variant = 'default'
+  variant = 'default',
 }: AlertDialogProps) {
   if (!open) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm animate-in fade-in"
+      <div
+        className="fixed inset-0 z-100 bg-black/50 backdrop-blur-sm animate-in fade-in"
         onClick={() => onOpenChange(false)}
       />
-      
+
       {/* Dialog */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] w-[90%] max-w-md animate-in zoom-in-95">
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-100 w-[90%] max-w-md animate-in zoom-in-95">
         <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
           <div className="p-6 space-y-4">
             {/* Title */}
             <h2 className="text-lg text-gray-900">{title}</h2>
-            
+
             {/* Description */}
             <p className="text-sm text-gray-600">{description}</p>
-            
+
             {/* Actions */}
             <div className="flex gap-3 pt-2">
               <button

@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { Card, CardHeader, CardContent } from './ui/card';
+import { Card, CardContent } from './ui/card';
 import { Alert, AlertDescription } from './ui/alert';
 
 interface AdminLoginProps {
@@ -21,16 +21,23 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   // Demo credentials
   const credentials = {
     admin: { username: 'admin', password: 'admin123' },
-    volunteer: { username: 'volunteer', password: 'vol123' }
+    volunteer: { username: 'volunteer', password: 'vol123' },
   };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (username === credentials[role].username && password === credentials[role].password) {
+    if (
+      username === credentials[role].username &&
+      password === credentials[role].password
+    ) {
       localStorage.setItem('userRole', role);
       localStorage.setItem('username', username);
-      toast.success(`เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${role === 'admin' ? 'ผู้ดูแลระบ��' : 'อาสาสมัคร'}`);
+      toast.success(
+        `เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับ ${
+          role === 'admin' ? 'ผู้ดูแลระบ��' : 'อาสาสมัคร'
+        }`
+      );
       onLogin(role);
     } else {
       toast.error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
@@ -38,7 +45,7 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Card className="shadow-xl overflow-hidden">
           {/* Header */}
@@ -47,7 +54,9 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
               <Shield className="w-8 h-8 text-white" />
             </div>
             <h1 className="text-xl text-white">เข้าสู่ระบบจัดการ</h1>
-            <p className="text-sm text-white/80 mt-1">ศูนย์ช่วยเหลือผู้ประสบภัย</p>
+            <p className="text-sm text-white/80 mt-1">
+              ศูนย์ช่วยเหลือผู้ประสบภัย
+            </p>
           </div>
 
           {/* Form */}
@@ -87,7 +96,7 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                     id="username"
                     type="text"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={e => setUsername(e.target.value)}
                     placeholder="กรอกชื่อผู้ใช้"
                     className="pl-10"
                     required
@@ -104,7 +113,7 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     placeholder="กรอกรหัสผ่าน"
                     className="pl-10 pr-12"
                     required
@@ -114,7 +123,11 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    {showPassword ? (
+                      <EyeOff className="w-5 h-5" />
+                    ) : (
+                      <Eye className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>

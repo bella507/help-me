@@ -1,349 +1,330 @@
-import { useState, useEffect } from 'react';
-import { Users, LogOut, Package, Clock, CheckCircle, MapPin, Phone, User, Navigation, MessageCircle, Camera, AlertCircle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Users,
+  LogOut,
+  Package,
+  Clock,
+  CheckCircle,
+  MapPin,
+  Phone,
+  Navigation,
+  MessageCircle,
+  AlertCircle,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Toaster } from './ui/sonner';
+import { CATEGORY_LABELS, REQUEST_STATUS } from '@/app/lib/constants';
+import {
+  cn,
+  formatDate,
+  generateId,
+  getUrgencyBadge,
+  notificationStorage,
+  requestStorage,
+  userStorage,
+} from '@/app/lib/utils';
+import type { HelpRequest } from '@/app/types';
 
-interface HelpRequest {
-  id: string;
-  name: string;
-  phone: string;
-  location: string;
-  category: string;
-  urgency: string;
-  description: string;
-  status: 'pending' | 'in-progress' | 'completed';
-  createdAt: string;
-  assignedTo?: string;
-  notes?: string;
-  volunteerNotes?: string;
-  progressPhotos?: string[];
-}
+type Tab = 'my-tasks' | 'available';
 
 export function VolunteerDashboard() {
   const [myTasks, setMyTasks] = useState<HelpRequest[]>([]);
   const [availableTasks, setAvailableTasks] = useState<HelpRequest[]>([]);
   const [selectedTask, setSelectedTask] = useState<HelpRequest | null>(null);
   const [taskNotes, setTaskNotes] = useState('');
-  const [activeTab, setActiveTab] = useState<'my-tasks' | 'available'>('my-tasks');
-  const volunteerId = 'v1'; // In real app, get from login
+  const [activeTab, setActiveTab] = useState<Tab>('my-tasks');
+  const volunteerId = 'v1'; // TODO: derive from login/session
+
+  const stats = useMemo(
+    () => ({
+      my: myTasks.length,
+      available: availableTasks.length,
+    }),
+    [myTasks, availableTasks]
+  );
 
   useEffect(() => {
-    loadTasks();
-    const interval = setInterval(loadTasks, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const loadTasks = () => {
-    const storedRequests = localStorage.getItem('helpRequests');
-    if (storedRequests) {
-      const requests: HelpRequest[] = JSON.parse(storedRequests);
-      setMyTasks(requests.filter(r => r.assignedTo === volunteerId && r.status !== 'completed'));
-      setAvailableTasks(requests.filter(r => !r.assignedTo && r.status === 'pending'));
-    }
-  };
+    const sync = () => {
+      const requests = requestStorage.getAll();
+      setMyTasks(
+        requests.filter(
+          r =>
+            r.assignedTo === volunteerId &&
+            r.status !== REQUEST_STATUS.COMPLETED
+        )
+      );
+      setAvailableTasks(
+        requests.filter(
+          r => !r.assignedTo && r.status === REQUEST_STATUS.PENDING
+        )
+      );
+    };
+    const t = window.setTimeout(sync, 0);
+    const interval = window.setInterval(sync, 5000);
+    return () => {
+      window.clearTimeout(t);
+      window.clearInterval(interval);
+    };
+  }, [volunteerId]);
 
   const handleLogout = () => {
-    localStorage.removeItem('userRole');
+    userStorage.clearRole();
     localStorage.removeItem('username');
     window.location.reload();
   };
 
   const acceptTask = (taskId: string) => {
-    const storedRequests = localStorage.getItem('helpRequests');
-    if (storedRequests) {
-      const requests: HelpRequest[] = JSON.parse(storedRequests);
-      const updatedRequests = requests.map(req =>
-        req.id === taskId ? { ...req, assignedTo: volunteerId, status: 'in-progress' as const } : req
-      );
-      localStorage.setItem('helpRequests', JSON.stringify(updatedRequests));
-      loadTasks();
-      toast.success('รับงานสำเร็จ!');
-    }
+    requestStorage.update(taskId, req => ({
+      ...req,
+      assignedTo: volunteerId,
+      status: REQUEST_STATUS.IN_PROGRESS,
+    }));
+    toast.success('รับงานสำเร็จ!');
+    setActiveTab('my-tasks');
   };
 
   const completeTask = (taskId: string) => {
-    const storedRequests = localStorage.getItem('helpRequests');
-    if (storedRequests) {
-      const requests: HelpRequest[] = JSON.parse(storedRequests);
-      const updatedRequests = requests.map(req =>
-        req.id === taskId ? { ...req, status: 'completed' as const } : req
-      );
-      localStorage.setItem('helpRequests', JSON.stringify(updatedRequests));
-      
-      // Add completion notification
-      const task = requests.find(r => r.id === taskId);
-      if (task) {
-        const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
-        notifications.unshift({
-          id: Date.now().toString(),
-          type: 'success',
-          title: 'ทำงานเสร็จสิ้น',
-          message: `คุณทำงานช่วยเหลือคุณ${task.name}เสร็จสิ้นแล้ว`,
-          time: new Date().toISOString(),
-          read: false
-        });
-        localStorage.setItem('notifications', JSON.stringify(notifications));
-      }
-      
-      loadTasks();
-      toast.success('ทำงานเสร็จสิ้น! ขอบคุณสำหรับการช่วยเหลือ');
+    const task = requestStorage.getById(taskId);
+    requestStorage.update(taskId, req => ({
+      ...req,
+      status: REQUEST_STATUS.COMPLETED,
+    }));
+
+    if (task) {
+      notificationStorage.add({
+        id: generateId(),
+        type: 'success',
+        title: 'ทำงานเสร็จสิ้น',
+        message: `คุณทำงานช่วยเหลือคุณ${task.name}เสร็จสิ้นแล้ว`,
+        time: new Date().toISOString(),
+        read: false,
+      });
     }
+
+    setSelectedTask(null);
+    toast.success('ทำงานเสร็จสิ้น! ขอบคุณสำหรับการช่วยเหลือ');
   };
 
   const saveTaskNotes = (taskId: string) => {
-    const storedRequests = localStorage.getItem('helpRequests');
-    if (storedRequests) {
-      const requests: HelpRequest[] = JSON.parse(storedRequests);
-      const updatedRequests = requests.map(req =>
-        req.id === taskId ? { ...req, volunteerNotes: taskNotes } : req
-      );
-      localStorage.setItem('helpRequests', JSON.stringify(updatedRequests));
-      setTaskNotes('');
-      setSelectedTask(null);
-      loadTasks();
-      toast.success('บันทึกหมายเหตุสำเร็จ');
-    }
-  };
-
-  const getCategoryName = (category: string) => {
-    const categories: Record<string, string> = {
-      food: 'อาหารและน้ำดื่ม',
-      shelter: 'ที่พักพิง',
-      medical: 'การรักษาพยาบาล',
-      clothing: 'เสื้อผ้า',
-      evacuation: 'ขอการอพยพ',
-      other: 'อื่นๆ'
-    };
-    return categories[category] || category;
-  };
-
-  const getUrgencyLabel = (urgency: string) => {
-    const labels: Record<string, string> = {
-      high: 'เร่งด่วน',
-      medium: 'ปานกลาง',
-      low: 'ไม่เร่งด่วน'
-    };
-    return labels[urgency] || urgency;
+    requestStorage.update(taskId, req => ({
+      ...req,
+      volunteerNotes: taskNotes,
+    }));
+    setTaskNotes('');
+    setSelectedTask(null);
+    toast.success('บันทึกหมายเหตุสำเร็จ');
   };
 
   const openNavigation = (location: string) => {
-    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      location
+    )}`;
     window.open(mapsUrl, '_blank');
+  };
+
+  const TaskCard = ({
+    task,
+    actionSlot,
+    showNotes = false,
+  }: {
+    task: HelpRequest;
+    actionSlot: React.ReactNode;
+    showNotes?: boolean;
+  }) => {
+    const urgency = getUrgencyBadge(task.urgency);
+    return (
+      <div className="rounded-xl border-2 border-gray-200 bg-white p-4">
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-base text-gray-900">{task.name}</h3>
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-xs',
+                    urgency.bgClass,
+                    urgency.textClass,
+                    urgency.borderClass
+                  )}
+                >
+                  {urgency.text}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-1 text-xs text-gray-600">
+                <Clock className="h-3.5 w-3.5" />
+                <span>{formatDate(task.createdAt)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <DetailRow
+              icon={<Package className="h-4 w-4 text-gray-400" />}
+              label="ประเภท"
+              value={CATEGORY_LABELS[task.category] || task.category}
+            />
+            <DetailRow
+              icon={<MapPin className="h-4 w-4 text-gray-400" />}
+              label="สถานที่"
+              value={task.location}
+            />
+            <DetailRow
+              icon={<Phone className="h-4 w-4 text-gray-400" />}
+              label="โทร"
+              value={
+                <a
+                  href={`tel:${task.phone}`}
+                  className="text-primary hover:underline"
+                >
+                  {task.phone}
+                </a>
+              }
+            />
+            <DetailRow
+              icon={<MessageCircle className="h-4 w-4 text-gray-400" />}
+              label="รายละเอียด"
+              value={task.description}
+            />
+          </div>
+
+          {task.notes && (
+            <NoteBlock
+              tone="yellow"
+              title="หมายเหตุจากแอดมิน"
+              text={task.notes}
+            />
+          )}
+
+          {showNotes && task.volunteerNotes && (
+            <NoteBlock
+              tone="blue"
+              title="หมายเหตุของฉัน"
+              text={task.volunteerNotes}
+            />
+          )}
+
+          {selectedTask?.id === task.id && (
+            <div className="border-t border-gray-200 pt-3">
+              <textarea
+                value={taskNotes}
+                onChange={e => setTaskNotes(e.target.value)}
+                placeholder="บันทึกความคืบหน้าหรือหมายเหตุ..."
+                className="w-full resize-none rounded-lg border-2 border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
+                rows={3}
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => saveTaskNotes(task.id)}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm text-white transition-colors hover:bg-[#e14a21]"
+                >
+                  บันทึก
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedTask(null);
+                    setTaskNotes('');
+                  }}
+                  className="rounded-lg border-2 border-gray-200 px-4 py-2 text-sm text-gray-700 transition-colors hover:border-gray-300"
+                >
+                  ยกเลิก
+                </button>
+              </div>
+            </div>
+          )}
+
+          {actionSlot}
+        </div>
+      </div>
+    );
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary p-2.5 rounded-lg">
-                <Users className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-base sm:text-lg text-gray-900">ระบบอาสาสมัคร</h1>
-                <p className="text-xs sm:text-sm text-gray-500">Volunteer Dashboard</p>
-              </div>
+      <header className="sticky top-0 z-40 border-b border-gray-200 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3">
+            <div className="rounded-lg bg-primary p-2.5">
+              <Users className="h-5 w-5 text-white" />
             </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-gray-200 hover:border-gray-300 text-gray-700 transition-colors text-sm"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">ออกจากระบบ</span>
-            </button>
+            <div>
+              <h1 className="text-base text-gray-900 sm:text-lg">
+                ระบบอาสาสมัคร
+              </h1>
+              <p className="text-xs text-gray-500 sm:text-sm">
+                Volunteer Dashboard
+              </p>
+            </div>
           </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 rounded-lg border-2 border-gray-200 px-4 py-2 text-sm text-gray-700 transition-colors hover:border-gray-300"
+          >
+            <LogOut className="h-4 w-4" />
+            <span className="hidden sm:inline">ออกจากระบบ</span>
+          </button>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-white rounded-xl border-2 border-blue-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-700">งานของฉัน</p>
-                <p className="text-3xl text-blue-700 mt-1">{myTasks.length}</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-lg">
-                <Package className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border-2 border-green-200 p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-green-700">งานใหม่</p>
-                <p className="text-3xl text-green-700 mt-1">{availableTasks.length}</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-lg">
-                <AlertCircle className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </div>
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <StatCard
+            label="งานของฉัน"
+            value={stats.my}
+            tone="blue"
+            icon={<Package className="h-6 w-6 text-blue-600" />}
+          />
+          <StatCard
+            label="งานใหม่"
+            value={stats.available}
+            tone="green"
+            icon={<AlertCircle className="h-6 w-6 text-green-600" />}
+          />
         </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-xl border-2 border-gray-200 mb-6 overflow-hidden">
+        <div className="mb-6 overflow-hidden rounded-xl border-2 border-gray-200 bg-white">
           <div className="flex">
-            <button
+            <TabButton
+              active={activeTab === 'my-tasks'}
               onClick={() => setActiveTab('my-tasks')}
-              className={`flex-1 px-6 py-3 text-sm transition-colors ${
-                activeTab === 'my-tasks'
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              งานของฉัน ({myTasks.length})
-            </button>
-            <button
+              label={`งานของฉัน (${stats.my})`}
+            />
+            <TabButton
+              active={activeTab === 'available'}
               onClick={() => setActiveTab('available')}
-              className={`flex-1 px-6 py-3 text-sm transition-colors ${
-                activeTab === 'available'
-                  ? 'bg-primary text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              งานที่รับได้ ({availableTasks.length})
-            </button>
+              label={`งานที่รับได้ (${stats.available})`}
+            />
           </div>
         </div>
 
-        {/* My Tasks */}
         {activeTab === 'my-tasks' && (
           <div className="space-y-3">
             {myTasks.length === 0 ? (
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-12 text-center">
-                <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">คุณยังไม่มีงานที่ต้องทำ</p>
-                <button
-                  onClick={() => setActiveTab('available')}
-                  className="mt-4 px-6 py-2 rounded-lg bg-primary text-white hover:bg-[#e14a21] transition-colors text-sm"
-                >
-                  ดูงานที่รับได้
-                </button>
-              </div>
+              <EmptyState
+                icon={<Package className="h-16 w-16 text-gray-300" />}
+                title="คุณยังไม่มีงานที่ต้องทำ"
+                actionLabel="ดูงานที่รับได้"
+                onAction={() => setActiveTab('available')}
+              />
             ) : (
               myTasks.map(task => (
-                <div key={task.id} className="bg-white rounded-xl border-2 border-blue-200 p-4">
-                  <div className="space-y-3">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base text-gray-900">{task.name}</h3>
-                          <span className={`px-2 py-0.5 rounded-full text-xs ${
-                            task.urgency === 'high' ? 'bg-red-100 text-red-700' :
-                            task.urgency === 'medium' ? 'bg-orange-100 text-orange-700' :
-                            'bg-green-100 text-green-700'
-                          }`}>
-                            {getUrgencyLabel(task.urgency)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>{new Date(task.createdAt).toLocaleString('th-TH')}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-2 text-sm">
-                        <Package className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-gray-600">ประเภท: </span>
-                          <span className="text-gray-900">{getCategoryName(task.category)}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2 text-sm">
-                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                          <span className="text-gray-600">สถานที่: </span>
-                          <span className="text-gray-900">{task.location}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2 text-sm">
-                        <Phone className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-gray-600">โทร: </span>
-                          <a href={`tel:${task.phone}`} className="text-primary hover:underline">
-                            {task.phone}
-                          </a>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2 text-sm">
-                        <MessageCircle className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-gray-600">รายละเอียด: </span>
-                          <span className="text-gray-900">{task.description}</span>
-                        </div>
-                      </div>
-
-                      {task.notes && (
-                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-3 py-2 text-xs">
-                          <span className="font-medium text-yellow-900">หมายเหตุจากแอดมิน: </span>
-                          <span className="text-yellow-800">{task.notes}</span>
-                        </div>
-                      )}
-
-                      {task.volunteerNotes && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-xs">
-                          <span className="font-medium text-blue-900">หมายเหตุของฉัน: </span>
-                          <span className="text-blue-800">{task.volunteerNotes}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Note Input */}
-                    {selectedTask?.id === task.id && (
-                      <div className="pt-3 border-t border-gray-200">
-                        <textarea
-                          value={taskNotes}
-                          onChange={(e) => setTaskNotes(e.target.value)}
-                          placeholder="บันทึกความคืบหน้าหรือหมายเหตุ..."
-                          className="w-full px-3 py-2 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none text-sm resize-none"
-                          rows={3}
-                        />
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            onClick={() => saveTaskNotes(task.id)}
-                            className="px-4 py-2 rounded-lg bg-primary text-white text-sm hover:bg-[#e14a21] transition-colors"
-                          >
-                            บันทึก
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedTask(null);
-                              setTaskNotes('');
-                            }}
-                            className="px-4 py-2 rounded-lg border-2 border-gray-200 text-gray-700 text-sm hover:border-gray-300 transition-colors"
-                          >
-                            ยกเลิก
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-3 border-t border-gray-200">
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  showNotes
+                  actionSlot={
+                    <div className="flex flex-wrap gap-2 border-t border-gray-200 pt-3">
                       <button
                         onClick={() => openNavigation(task.location)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm transition-colors"
+                        className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700"
                       >
-                        <Navigation className="w-4 h-4" />
+                        <Navigation className="h-4 w-4" />
                         <span>นำทาง</span>
                       </button>
                       <a
                         href={`tel:${task.phone}`}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm transition-colors"
+                        className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm text-white transition-colors hover:bg-green-700"
                       >
-                        <Phone className="w-4 h-4" />
+                        <Phone className="h-4 w-4" />
                         <span>โทร</span>
                       </a>
                       <button
@@ -351,112 +332,187 @@ export function VolunteerDashboard() {
                           setSelectedTask(task);
                           setTaskNotes(task.volunteerNotes || '');
                         }}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-gray-200 hover:border-gray-300 text-gray-700 text-sm transition-colors"
+                        className="flex items-center gap-2 rounded-lg border-2 border-gray-200 px-4 py-2 text-sm text-gray-700 transition-colors hover:border-gray-300"
                       >
-                        <MessageCircle className="w-4 h-4" />
+                        <MessageCircle className="h-4 w-4" />
                         <span>เพิ่มหมายเหตุ</span>
                       </button>
                       <button
                         onClick={() => completeTask(task.id)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white text-sm transition-colors ml-auto"
+                        className="ml-auto flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm text-white transition-colors hover:bg-green-700"
                       >
-                        <CheckCircle className="w-4 h-4" />
+                        <CheckCircle className="h-4 w-4" />
                         <span>ทำเสร็จแล้ว</span>
                       </button>
                     </div>
-                  </div>
-                </div>
+                  }
+                />
               ))
             )}
           </div>
         )}
 
-        {/* Available Tasks */}
         {activeTab === 'available' && (
           <div className="space-y-3">
             {availableTasks.length === 0 ? (
-              <div className="bg-white rounded-xl border-2 border-gray-200 p-12 text-center">
-                <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">ไม่มีงานใหม่ในขณะนี้</p>
-              </div>
+              <EmptyState
+                icon={<AlertCircle className="h-16 w-16 text-gray-300" />}
+                title="ไม่มีงานใหม่ในขณะนี้"
+              />
             ) : (
               availableTasks.map(task => (
-                <div key={task.id} className="bg-white rounded-xl border-2 border-gray-200 hover:border-gray-300 p-4 transition-colors">
-                  <div className="space-y-3">
-                    {/* Header */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="text-base text-gray-900">{task.name}</h3>
-                          <span className={`px-2 py-0.5 rounded-full text-xs ${
-                            task.urgency === 'high' ? 'bg-red-100 text-red-700' :
-                            task.urgency === 'medium' ? 'bg-orange-100 text-orange-700' :
-                            'bg-green-100 text-green-700'
-                          }`}>
-                            {getUrgencyLabel(task.urgency)}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-600 mt-1">
-                          <Clock className="w-3.5 h-3.5" />
-                          <span>{new Date(task.createdAt).toLocaleString('th-TH')}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Details */}
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-2 text-sm">
-                        <Package className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-gray-600">ประเภท: </span>
-                          <span className="text-gray-900">{getCategoryName(task.category)}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2 text-sm">
-                        <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div className="flex-1">
-                          <span className="text-gray-600">สถานที่: </span>
-                          <span className="text-gray-900">{task.location}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start gap-2 text-sm">
-                        <MessageCircle className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <span className="text-gray-600">รายละเอียด: </span>
-                          <span className="text-gray-900">{task.description}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex gap-2 pt-3 border-t border-gray-200">
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  actionSlot={
+                    <div className="flex gap-2 border-t border-gray-200 pt-3">
                       <button
                         onClick={() => acceptTask(task.id)}
-                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-primary hover:bg-[#e14a21] text-white text-sm transition-colors"
+                        className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm text-white transition-colors hover:bg-[#e14a21]"
                       >
-                        <CheckCircle className="w-4 h-4" />
+                        <CheckCircle className="h-4 w-4" />
                         <span>รับงานนี้</span>
                       </button>
                       <button
                         onClick={() => openNavigation(task.location)}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-lg border-2 border-gray-200 hover:border-gray-300 text-gray-700 text-sm transition-colors"
+                        className="flex items-center gap-2 rounded-lg border-2 border-gray-200 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:border-gray-300"
                       >
-                        <MapPin className="w-4 h-4" />
+                        <MapPin className="h-4 w-4" />
                         <span>ดูแผนที่</span>
                       </button>
                     </div>
-                  </div>
-                </div>
+                  }
+                />
               ))
             )}
           </div>
         )}
       </main>
 
-      {/* Toast Notifications */}
       <Toaster position="top-center" richColors />
+    </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'flex-1 px-6 py-3 text-sm transition-colors',
+        active
+          ? 'bg-primary text-white'
+          : 'bg-white text-gray-700 hover:bg-gray-50'
+      )}
+    >
+      {label}
+    </button>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  tone,
+  icon,
+}: {
+  label: string;
+  value: number;
+  tone: 'blue' | 'green';
+  icon: React.ReactNode;
+}) {
+  const toneStyles =
+    tone === 'blue'
+      ? 'border-blue-200 text-blue-700 bg-white'
+      : 'border-green-200 text-green-700 bg-white';
+  const badgeStyles = tone === 'blue' ? 'bg-blue-100' : 'bg-green-100';
+
+  return (
+    <div className={cn('rounded-xl border-2 p-4', toneStyles)}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm">{label}</p>
+          <p className="mt-1 text-3xl">{value}</p>
+        </div>
+        <div className={cn('rounded-lg p-3', badgeStyles)}>{icon}</div>
+      </div>
+    </div>
+  );
+}
+
+function DetailRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-2 text-sm">
+      <div className="mt-0.5 shrink-0 text-gray-400">{icon}</div>
+      <div>
+        <span className="text-gray-600">{label}: </span>
+        <span className="text-gray-900">{value}</span>
+      </div>
+    </div>
+  );
+}
+
+function NoteBlock({
+  tone,
+  title,
+  text,
+}: {
+  tone: 'yellow' | 'blue';
+  title: string;
+  text: string;
+}) {
+  const bg =
+    tone === 'yellow'
+      ? 'bg-yellow-50 border-yellow-200 text-yellow-800'
+      : 'bg-blue-50 border-blue-200 text-blue-800';
+  const titleColor = tone === 'yellow' ? 'text-yellow-900' : 'text-blue-900';
+  return (
+    <div className={cn('rounded-lg border px-3 py-2 text-xs', bg)}>
+      <span className={cn('font-medium', titleColor)}>{title}: </span>
+      <span>{text}</span>
+    </div>
+  );
+}
+
+function EmptyState({
+  icon,
+  title,
+  actionLabel,
+  onAction,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  actionLabel?: string;
+  onAction?: () => void;
+}) {
+  return (
+    <div className="rounded-xl border-2 border-gray-200 bg-white p-12 text-center">
+      <div className="mx-auto mb-4">{icon}</div>
+      <p className="text-gray-500">{title}</p>
+      {actionLabel && onAction && (
+        <button
+          onClick={onAction}
+          className="mt-4 rounded-lg bg-primary px-6 py-2 text-sm text-white transition-colors hover:bg-[#e14a21]"
+        >
+          {actionLabel}
+        </button>
+      )}
     </div>
   );
 }

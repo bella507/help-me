@@ -1,11 +1,10 @@
-import { useState } from 'react';
-import { 
-  User, 
-  Phone as PhoneIcon, 
-  MapPin, 
+import { useMemo, useState } from 'react';
+import {
+  User,
+  Phone as PhoneIcon,
+  MapPin,
   Home,
   Utensils,
-  Building2,
   Stethoscope,
   Shirt,
   Car,
@@ -22,274 +21,251 @@ import {
   Baby,
   HeartPulse,
   Pill,
-  Camera,
-  X,
-  Share2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { cn, generateId, requestStorage } from '@/app/lib/utils';
+import type { HelpRequest } from '@/app/types';
 
-interface FormData {
+type FormData = {
   name: string;
   phone: string;
   location: string;
   address: string;
-  urgency: string;
+  urgency: HelpRequest['urgency'];
   category: string;
   description: string;
   riskGroups: string[];
-  riskGroupDetails: {
-    elderly?: string;
-    children?: string;
-    disabled?: string;
-    pregnant?: string;
-    pets?: string;
-    medical?: string;
-  };
+  riskGroupDetails: Record<string, string>;
   specialNeeds: string;
-  images: string[];
-}
+};
+
+type IconType = React.ComponentType<{ className?: string }>;
+type CategoryOption = { value: string; label: string; icon: IconType };
+type RiskOption = { value: string; label: string; icon: IconType };
+
+const TOTAL_STEPS = 5;
+const INPUT_CLASS =
+  'w-full rounded-lg border border-gray-200 px-4 py-3 outline-none transition-all placeholder:text-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20';
+
+const CATEGORY_OPTIONS: CategoryOption[] = [
+  { value: 'food', label: 'อาหาร/น้ำ', icon: Utensils },
+  { value: 'shelter', label: 'ที่พักพิง', icon: Home },
+  { value: 'medical', label: 'พยาบาล', icon: Stethoscope },
+  { value: 'clothing', label: 'เสื้อผ้า', icon: Shirt },
+  { value: 'evacuation', label: 'อพยพ', icon: Car },
+  { value: 'other', label: 'อื่นๆ', icon: Package },
+];
+
+const RISK_OPTIONS: RiskOption[] = [
+  { value: 'elderly', label: 'ผู้สูงอายุ (60 ปีขึ้นไป)', icon: Users },
+  { value: 'children', label: 'เด็กเล็ก (ต่ำกว่า 5 ปี)', icon: Baby },
+  { value: 'disabled', label: 'ผู้พิการ/ผู้ป่วยติดเตียง', icon: Accessibility },
+  { value: 'pregnant', label: 'หญิงมีครรภ์', icon: HeartPulse },
+  { value: 'pets', label: 'สัตว์เลี้ยง', icon: PawPrint },
+  { value: 'medical', label: 'ต้องการยาหรืออุปกรณ์ทางการแพทย์', icon: Pill },
+];
+
+const EMPTY_FORM: FormData = {
+  name: '',
+  phone: '',
+  location: '',
+  address: '',
+  urgency: 'medium',
+  category: '',
+  description: '',
+  riskGroups: [],
+  riskGroupDetails: {},
+  specialNeeds: '',
+};
 
 export function HelpRequestForm() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    name: '',
-    phone: '',
-    location: '',
-    address: '',
-    urgency: 'medium',
-    category: '',
-    description: '',
-    riskGroups: [],
-    riskGroupDetails: {},
-    specialNeeds: '',
-    images: []
-  });
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+
+  const progress = useMemo(
+    () => Math.round((step / TOTAL_STEPS) * 100),
+    [step]
+  );
+
+  const canProceed = useMemo(() => {
+    if (step === 1) return formData.name.trim() && formData.phone.trim();
+    if (step === 2) return formData.location.trim();
+    if (step === 3) return formData.category && formData.urgency;
+    return true;
+  }, [formData, step]);
+
+  const setField = <K extends keyof FormData>(key: K, value: FormData[K]) =>
+    setFormData(prev => ({ ...prev, [key]: value }));
+
+  const toggleRiskGroup = (group: string) =>
+    setFormData(prev => {
+      const exists = prev.riskGroups.includes(group);
+      const riskGroupDetails = { ...prev.riskGroupDetails };
+      if (exists) {
+        delete riskGroupDetails[group];
+      }
+      return {
+        ...prev,
+        riskGroups: exists
+          ? prev.riskGroups.filter(g => g !== group)
+          : [...prev.riskGroups, group],
+        riskGroupDetails,
+      };
+    });
+
+  const updateRiskGroupDetail = (group: string, value: string) =>
+    setFormData(prev => ({
+      ...prev,
+      riskGroupDetails: { ...prev.riskGroupDetails, [group]: value },
+    }));
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const requests = JSON.parse(localStorage.getItem('helpRequests') || '[]');
-    const newRequest = {
-      id: Date.now().toString(),
-      ...formData,
+
+    const newRequest: HelpRequest = {
+      id: generateId(),
+      name: formData.name,
+      phone: formData.phone,
+      location: formData.location,
+      category: formData.category || 'other',
+      urgency: formData.urgency,
+      description: formData.description,
       status: 'pending',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      notes: formData.specialNeeds,
+      assignedTo: undefined,
     };
-    requests.push(newRequest);
-    localStorage.setItem('helpRequests', JSON.stringify(requests));
-    
+
+    requestStorage.add(newRequest);
     toast.success('ส่งคำขอความช่วยเหลือเรียบร้อยแล้ว');
-    
-    setFormData({
-      name: '',
-      phone: '',
-      location: '',
-      address: '',
-      urgency: 'medium',
-      category: '',
-      description: '',
-      riskGroups: [],
-      riskGroupDetails: {},
-      specialNeeds: '',
-      images: []
-    });
+    setFormData(EMPTY_FORM);
     setStep(1);
   };
 
-  const totalSteps = 5;
-  const progress = (step / totalSteps) * 100;
-
-  const canProceed = () => {
-    if (step === 1) return formData.name.trim() !== '' && formData.phone.trim() !== '';
-    if (step === 2) return formData.location.trim() !== '';
-    if (step === 3) return formData.category !== '' && formData.urgency !== '';
-    if (step === 4) return true;
-    if (step === 5) return true;
-    return true;
-  };
-
-  const handleNext = () => {
-    setStep(step + 1);
-  };
-
-  const toggleRiskGroup = (group: string) => {
-    if (formData.riskGroups.includes(group)) {
-      // Remove group
-      const newGroups = formData.riskGroups.filter(g => g !== group);
-      const newDetails = { ...formData.riskGroupDetails };
-      delete newDetails[group as keyof typeof newDetails];
-      setFormData({ ...formData, riskGroups: newGroups, riskGroupDetails: newDetails });
-    } else {
-      // Add group
-      setFormData({ ...formData, riskGroups: [...formData.riskGroups, group] });
-    }
-  };
-
-  const updateRiskGroupDetail = (group: string, value: string) => {
-    setFormData({
-      ...formData,
-      riskGroupDetails: {
-        ...formData.riskGroupDetails,
-        [group]: value
-      }
-    });
-  };
-
-  const categories = [
-    { value: 'food', label: 'อาหาร/น้ำ', icon: Utensils },
-    { value: 'shelter', label: 'ที่พักพิง', icon: Home },
-    { value: 'medical', label: 'พยาบาล', icon: Stethoscope },
-    { value: 'clothing', label: 'เสื้อผ้า', icon: Shirt },
-    { value: 'evacuation', label: 'อพยพ', icon: Car },
-    { value: 'other', label: 'อื่นๆ', icon: Package }
-  ];
-
-  const riskGroupsOptions = [
-    { value: 'elderly', label: 'ผู้สูงอายุ (60 ปีขึ้นไป)', icon: Users },
-    { value: 'children', label: 'เด็กเล็ก (ต่ำกว่า 5 ปี)', icon: Baby },
-    { value: 'disabled', label: 'ผู้พิการ/ผู้ป่วยติดเตียง', icon: Accessibility },
-    { value: 'pregnant', label: 'หญิงมีครรภ์', icon: HeartPulse },
-    { value: 'pets', label: 'สัตว์เลี้ยง', icon: PawPrint },
-    { value: 'medical', label: 'ต้องการยาหรืออุปกรณ์ทางการแพทย์', icon: Pill }
-  ];
+  const urgencyPill = (
+    value: HelpRequest['urgency'],
+    tone: 'green' | 'orange' | 'red'
+  ) =>
+    cn(
+      'inline-flex items-center gap-1 rounded px-2.5 py-1 text-xs',
+      tone === 'green' && 'bg-green-100 text-green-700',
+      tone === 'orange' && 'bg-orange-100 text-orange-700',
+      tone === 'red' && 'bg-red-100 text-red-700',
+      formData.urgency === value && 'ring-1 ring-offset-0 ring-current'
+    );
 
   return (
     <div className="space-y-6">
-      {/* Progress Bar */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-gray-600">ขั้นตอนที่ {step} จาก {totalSteps}</span>
-          <span className="text-sm text-gray-600">{Math.round(progress)}%</span>
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-sm text-gray-600">
+            ขั้นตอนที่ {step} จาก {TOTAL_STEPS}
+          </span>
+          <span className="text-sm text-gray-600">{progress}%</span>
         </div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-primary rounded-full transition-all duration-300"
+        <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+          <div
+            className="h-full rounded-full bg-primary transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit}>
-        {/* Step 1: Personal Info */}
+      <form onSubmit={handleSubmit} className="space-y-6">
         {step === 1 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gray-100 p-2.5 rounded-lg">
-                <User className="w-5 h-5 text-gray-700" />
-              </div>
-              <div>
-                <h3 className="text-gray-900">ข้อมูลผู้ขอความช่วยเหลือ</h3>
-                <p className="text-sm text-gray-500">ชื่อและเบอร์ติดต่อของคุณ</p>
-              </div>
-            </div>
-
+          <Section
+            icon={<User className="h-5 w-5 text-gray-700" />}
+            title="ข้อมูลผู้ขอความช่วยเหลือ"
+            subtitle="ชื่อและเบอร์ติดต่อของคุณ"
+          >
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">
-                  ชื่อ-นามสกุล <span className="text-primary">*</span>
-                </label>
+              <Field label="ชื่อ-นามสกุล" required>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400"
+                  onChange={e => setField('name', e.target.value)}
+                  className={INPUT_CLASS}
                   placeholder="กรอกชื่อ-นามสกุล"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">
-                  เบอร์โทรศัพท์ <span className="text-primary">*</span>
-                </label>
+              <Field label="เบอร์โทรศัพท์" required>
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400"
+                  onChange={e => setField('phone', e.target.value)}
+                  className={INPUT_CLASS}
                   placeholder="0xx-xxx-xxxx"
                 />
-              </div>
+              </Field>
             </div>
-          </div>
+          </Section>
         )}
 
-        {/* Step 2: Location */}
         {step === 2 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gray-100 p-2.5 rounded-lg">
-                <MapPin className="w-5 h-5 text-gray-700" />
-              </div>
-              <div>
-                <h3 className="text-gray-900">ที่อยู่ของคุณ</h3>
-                <p className="text-sm text-gray-500">เพื่อให้เราไปช่วยเหลือคุณได้</p>
-              </div>
-            </div>
-
+          <Section
+            icon={<MapPin className="h-5 w-5 text-gray-700" />}
+            title="ที่อยู่ของคุณ"
+            subtitle="เพื่อให้เราไปช่วยเหลือคุณได้"
+          >
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">
-                  จังหวัด/อำเภอ <span className="text-primary">*</span>
-                </label>
+              <Field label="จังหวัด/อำเภอ" required>
                 <input
                   type="text"
                   value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400"
+                  onChange={e => setField('location', e.target.value)}
+                  className={INPUT_CLASS}
                   placeholder="เช่น กรุงเทพมหานคร, เขตบางกอกน้อย"
                 />
-              </div>
+              </Field>
 
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">
-                  ที่อยู่โดยละเอียด (ถ้ามี)
-                </label>
+              <Field label="ที่อยู่โดยละเอียด (ถ้ามี)">
                 <input
                   type="text"
                   value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-gray-400"
+                  onChange={e => setField('address', e.target.value)}
+                  className={INPUT_CLASS}
                   placeholder="บ้านเลขที่ ถนน ตำบล"
                 />
-              </div>
+              </Field>
             </div>
-          </div>
+          </Section>
         )}
 
-        {/* Step 3: Help Type */}
         {step === 3 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gray-100 p-2.5 rounded-lg">
-                <Package className="w-5 h-5 text-gray-700" />
-              </div>
-              <div>
-                <h3 className="text-gray-900">ต้องการความช่วยเหลืออะไร</h3>
-                <p className="text-sm text-gray-500">เลือกได้ 1 อย่าง</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {categories.map((cat) => {
-                const IconComponent = cat.icon;
+          <Section
+            icon={<Package className="h-5 w-5 text-gray-700" />}
+            title="ต้องการความช่วยเหลืออะไร"
+            subtitle="เลือกได้ 1 อย่าง"
+          >
+            <div className="mb-6 grid grid-cols-2 gap-3">
+              {CATEGORY_OPTIONS.map(cat => {
+                const Icon = cat.icon;
+                const active = formData.category === cat.value;
                 return (
                   <button
                     key={cat.value}
                     type="button"
-                    onClick={() => setFormData({ ...formData, category: cat.value })}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      formData.category === cat.value
+                    onClick={() => setField('category', cat.value)}
+                    className={cn(
+                      'rounded-lg border-2 p-4 transition-all',
+                      active
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    )}
                   >
-                    <IconComponent className={`w-6 h-6 mx-auto mb-2 ${
-                      formData.category === cat.value ? 'text-primary' : 'text-gray-600'
-                    }`} />
-                    <div className={`text-sm ${
-                      formData.category === cat.value ? 'text-gray-900' : 'text-gray-600'
-                    }`}>
+                    <Icon
+                      className={cn(
+                        'mx-auto mb-2 h-6 w-6',
+                        active ? 'text-primary' : 'text-gray-600'
+                      )}
+                    />
+                    <div
+                      className={cn(
+                        'text-sm',
+                        active ? 'text-gray-900' : 'text-gray-600'
+                      )}
+                    >
                       {cat.label}
                     </div>
                   </button>
@@ -297,138 +273,157 @@ export function HelpRequestForm() {
               })}
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm text-gray-700 mb-3">
-                ระดับความเร่งด่วน <span className="text-primary">*</span>
-              </label>
+            <Field label="ระดับความเร่งด่วน" required>
               <div className="grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, urgency: 'low' })}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                <UrgencyButton
+                  active={formData.urgency === 'low'}
+                  onClick={() => setField('urgency', 'low')}
+                  icon={
+                    <Circle
+                      className={cn(
+                        'h-5 w-5',
+                        formData.urgency === 'low'
+                          ? 'fill-green-500 text-green-500'
+                          : 'text-gray-400'
+                      )}
+                    />
+                  }
+                  label="ไม่เร่งด่วน"
+                  className={cn(
+                    'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'low'
                       ? 'border-green-500 bg-green-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <Circle className={`w-5 h-5 mx-auto mb-1 ${
-                    formData.urgency === 'low' ? 'text-green-500 fill-green-500' : 'text-gray-400'
-                  }`} />
-                  <div className="text-xs text-gray-900">ไม่เร่งด่วน</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, urgency: 'medium' })}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  )}
+                />
+                <UrgencyButton
+                  active={formData.urgency === 'medium'}
+                  onClick={() => setField('urgency', 'medium')}
+                  icon={
+                    <AlertCircle
+                      className={cn(
+                        'h-5 w-5',
+                        formData.urgency === 'medium'
+                          ? 'text-primary'
+                          : 'text-gray-400'
+                      )}
+                    />
+                  }
+                  label="ปานกลาง"
+                  className={cn(
+                    'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'medium'
                       ? 'border-primary bg-primary/5'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <AlertCircle className={`w-5 h-5 mx-auto mb-1 ${
-                    formData.urgency === 'medium' ? 'text-primary' : 'text-gray-400'
-                  }`} />
-                  <div className="text-xs text-gray-900">ปานกลาง</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setFormData({ ...formData, urgency: 'high' })}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  )}
+                />
+                <UrgencyButton
+                  active={formData.urgency === 'high'}
+                  onClick={() => setField('urgency', 'high')}
+                  icon={
+                    <AlertTriangle
+                      className={cn(
+                        'h-5 w-5',
+                        formData.urgency === 'high'
+                          ? 'text-red-500'
+                          : 'text-gray-400'
+                      )}
+                    />
+                  }
+                  label="เร่งด่วน"
+                  className={cn(
+                    'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'high'
                       ? 'border-red-500 bg-red-50'
                       : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <AlertTriangle className={`w-5 h-5 mx-auto mb-1 ${
-                    formData.urgency === 'high' ? 'text-red-500' : 'text-gray-400'
-                  }`} />
-                  <div className="text-xs text-gray-900">เร่งด่วน</div>
-                </button>
+                  )}
+                />
               </div>
-            </div>
+            </Field>
 
-            <div>
-              <label className="block text-sm text-gray-700 mb-2">
-                อธิบายสถานการณ์ (ถ้ามี)
-              </label>
+            <Field label="อธิบายสถานการณ์ (ถ้ามี)">
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={e => setField('description', e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all placeholder:text-gray-400"
+                className={cn(INPUT_CLASS, 'resize-none')}
                 placeholder="เช่น บ้านท่วมน้ำสูง 1 เมตร ต้องการอาหารและน้ำดื่ม"
               />
-            </div>
-          </div>
+            </Field>
+          </Section>
         )}
 
-        {/* Step 4: Risk Groups */}
         {step === 4 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-gray-100 p-2.5 rounded-lg">
-                <Users className="w-5 h-5 text-gray-700" />
-              </div>
-              <div>
-                <h3 className="text-gray-900">กลุ่มเสี่ยงพิเศษ</h3>
-                <p className="text-sm text-gray-500">เลือกได้หลายอย่าง (ถ้ามี)</p>
-              </div>
-            </div>
-
-            <div className="space-y-3 mb-4">
-              {riskGroupsOptions.map((group) => {
-                const IconComponent = group.icon;
+          <Section
+            icon={<Users className="h-5 w-5 text-gray-700" />}
+            title="กลุ่มเสี่ยงพิเศษ"
+            subtitle="เลือกได้หลายอย่าง (ถ้ามี)"
+          >
+            <div className="mb-4 space-y-3">
+              {RISK_OPTIONS.map(group => {
+                const Icon = group.icon;
                 const isSelected = formData.riskGroups.includes(group.value);
-                
+                const placeholderMap: Record<string, string> = {
+                  elderly: 'เช่น 2 คน, เคลื่อนไหวได้บ้าง, มีโรคเบาหวาน',
+                  children: 'เช่น 1 คน, อายุ 3 ขวบ',
+                  disabled: 'เช่น 1 คน, ใช้รถเข็น, ต้องการอุปกรณ์ช่วยเหลือ',
+                  pregnant: 'เช่น ตั้งครรภ์ 7 เดือน',
+                  pets: 'เช่น สุนัข 2 ตัว (ขนาดใหญ่) แมว 1 ตัว',
+                  medical: 'เช่น ยาความดันโลหิตสูง, เครื่องวัดน้ำตาล, ออกซิเจน',
+                };
+
                 return (
                   <div key={group.value}>
                     <button
                       type="button"
                       onClick={() => toggleRiskGroup(group.value)}
-                      className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                      className={cn(
+                        'w-full rounded-lg border-2 p-4 text-left transition-all',
                         isSelected
                           ? 'border-primary bg-primary/5'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      )}
                     >
                       <div className="flex items-center gap-3">
-                        <IconComponent className={`w-5 h-5 flex-shrink-0 ${
-                          isSelected ? 'text-primary' : 'text-gray-600'
-                        }`} />
-                        <span className={`text-sm ${
-                          isSelected ? 'text-gray-900' : 'text-gray-600'
-                        }`}>
+                        <Icon
+                          className={cn(
+                            'h-5 w-5 shrink-0',
+                            isSelected ? 'text-primary' : 'text-gray-600'
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            'text-sm',
+                            isSelected ? 'text-gray-900' : 'text-gray-600'
+                          )}
+                        >
                           {group.label}
                         </span>
-                        <div className="ml-auto">
-                          <div className={`w-5 h-5 rounded border-2 flex items-center justify-center ${
-                            isSelected 
-                              ? 'bg-primary border-primary' 
+                        <div
+                          className={cn(
+                            'ml-auto flex h-5 w-5 items-center justify-center rounded border-2',
+                            isSelected
+                              ? 'border-primary bg-primary'
                               : 'border-gray-300'
-                          }`}>
-                            {isSelected && (
-                              <CheckCircle2 className="w-4 h-4 text-white" />
-                            )}
-                          </div>
+                          )}
+                        >
+                          {isSelected && (
+                            <CheckCircle2 className="h-4 w-4 text-white" />
+                          )}
                         </div>
                       </div>
                     </button>
 
                     {isSelected && (
-                      <div className="mt-2 ml-11 mr-2">
+                      <div className="ml-11 mr-2 mt-2">
                         <textarea
-                          value={formData.riskGroupDetails[group.value as keyof typeof formData.riskGroupDetails] || ''}
-                          onChange={(e) => updateRiskGroupDetail(group.value, e.target.value)}
-                          rows={2}
-                          className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all placeholder:text-gray-400 text-sm"
-                          placeholder={
-                            group.value === 'elderly' ? 'เช่น 2 คน, เคลื่อนไหวได้บ้าง, มีโรคเบาหวาน' :
-                            group.value === 'children' ? 'เช่น 1 คน, อายุ 3 ขวบ' :
-                            group.value === 'disabled' ? 'เช่น 1 คน, ใช้รถเข็น, ต้องการอุปกรณ์ช่วยเหลือ' :
-                            group.value === 'pregnant' ? 'เช่น ตั้งครรภ์ 7 เดือน' :
-                            group.value === 'pets' ? 'เช่น สุนัข 2 ตัว (ขนาดใหญ่) แมว 1 ตัว' :
-                            'เช่น ยาความดันโลหิตสูง, เครื่องวัดน้ำตาล, ออกซิเจน'
+                          value={formData.riskGroupDetails[group.value] || ''}
+                          onChange={e =>
+                            updateRiskGroupDetail(group.value, e.target.value)
                           }
+                          rows={2}
+                          className={cn(INPUT_CLASS, 'resize-none text-sm')}
+                          placeholder={placeholderMap[group.value] || ''}
                         />
                       </div>
                     )}
@@ -438,105 +433,107 @@ export function HelpRequestForm() {
             </div>
 
             {formData.riskGroups.length === 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
                 <p className="text-sm text-gray-600">
                   หากไม่มีกลุ่มเสี่ยงพิเศษ กดถัดไปได้เลย
                 </p>
               </div>
             )}
-          </div>
+          </Section>
         )}
 
-        {/* Step 5: Review */}
         {step === 5 && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="bg-primary/10 p-2.5 rounded-lg">
-                <CheckCircle2 className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h3 className="text-gray-900">ตรวจสอบข้อมูลก่อนส่ง</h3>
-                <p className="text-sm text-gray-500">กรุณาตรวจสอบความถูกต้อง</p>
-              </div>
-            </div>
+          <Section
+            icon={<CheckCircle2 className="h-5 w-5 text-primary" />}
+            title="ตรวจสอบข้อมูลก่อนส่ง"
+            subtitle="กรุณาตรวจสอบความถูกต้อง"
+          >
+            <div className="mb-6 space-y-3">
+              <ReviewBlock
+                title="ข้อมูลผู้ขอความช่วยเหลือ"
+                icon={<User className="h-4 w-4 text-gray-600" />}
+                items={[
+                  { label: formData.name },
+                  {
+                    label: formData.phone,
+                    icon: <PhoneIcon className="h-3.5 w-3.5" />,
+                  },
+                ]}
+              />
 
-            <div className="space-y-3 mb-6">
-              {/* Personal Info */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <User className="w-4 h-4 text-gray-600" />
-                  <div className="text-xs text-gray-600">ข้อมูลผู้ขอความช่วยเหลือ</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-gray-900">{formData.name}</div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <PhoneIcon className="w-3.5 h-3.5" />
-                    <span>{formData.phone}</span>
+              <ReviewBlock
+                title="ที่อยู่"
+                icon={<MapPin className="h-4 w-4 text-gray-600" />}
+                items={[
+                  { label: formData.location },
+                  ...(formData.address ? [{ label: formData.address }] : []),
+                ]}
+              />
+
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <Package className="h-4 w-4 text-gray-600" />
+                  <div className="text-xs text-gray-600">
+                    ความช่วยเหลือที่ต้องการ
                   </div>
-                </div>
-              </div>
-
-              {/* Location */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="w-4 h-4 text-gray-600" />
-                  <div className="text-xs text-gray-600">ที่อยู่</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-gray-900">{formData.location}</div>
-                  {formData.address && (
-                    <div className="text-sm text-gray-600">{formData.address}</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Help Type */}
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <Package className="w-4 h-4 text-gray-600" />
-                  <div className="text-xs text-gray-600">ความช่วยเหลือที่ต้องการ</div>
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-900">
-                      {categories.find(c => c.value === formData.category)?.label}
+                      {
+                        CATEGORY_OPTIONS.find(
+                          c => c.value === formData.category
+                        )?.label
+                      }
                     </span>
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs ${
-                      formData.urgency === 'high' 
-                        ? 'bg-red-100 text-red-700' 
-                        : formData.urgency === 'medium' 
-                        ? 'bg-orange-100 text-orange-700' 
-                        : 'bg-green-100 text-green-700'
-                    }`}>
-                      {formData.urgency === 'high' ? 'เร่งด่วน' : formData.urgency === 'medium' ? 'ปานกลาง' : 'ไม่เร่งด่วน'}
+                    <span
+                      className={urgencyPill(
+                        formData.urgency,
+                        formData.urgency === 'high'
+                          ? 'red'
+                          : formData.urgency === 'medium'
+                          ? 'orange'
+                          : 'green'
+                      )}
+                    >
+                      {formData.urgency === 'high'
+                        ? 'เร่งด่วน'
+                        : formData.urgency === 'medium'
+                        ? 'ปานกลาง'
+                        : 'ไม่เร่งด่วน'}
                     </span>
                   </div>
                   {formData.description && (
-                    <div className="text-sm text-gray-600 pt-2 border-t border-gray-200">
+                    <div className="border-t border-gray-200 pt-2 text-sm text-gray-600">
                       {formData.description}
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Risk Groups */}
               {formData.riskGroups.length > 0 && (
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <div className="text-xs text-gray-600 mb-3">กลุ่มเสี่ยงพิเศษ</div>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <div className="mb-3 text-xs text-gray-600">
+                    กลุ่มเสี่ยงพิเศษ
+                  </div>
                   <div className="space-y-3">
-                    {formData.riskGroups.map((groupValue) => {
-                      const group = riskGroupsOptions.find(g => g.value === groupValue);
-                      const IconComponent = group?.icon || Users;
-                      const detail = formData.riskGroupDetails[groupValue as keyof typeof formData.riskGroupDetails];
-                      
+                    {formData.riskGroups.map(value => {
+                      const group = RISK_OPTIONS.find(g => g.value === value);
+                      const Icon = group?.icon || Users;
+                      const detail = formData.riskGroupDetails[value];
                       return (
-                        <div key={groupValue} className="bg-white rounded-lg p-3 border border-gray-200">
-                          <div className="flex items-center gap-2 mb-1">
-                            <IconComponent className="w-4 h-4 text-gray-700" />
-                            <span className="text-sm text-gray-900">{group?.label}</span>
+                        <div
+                          key={value}
+                          className="rounded-lg border border-gray-200 bg-white p-3"
+                        >
+                          <div className="mb-1 flex items-center gap-2">
+                            <Icon className="h-4 w-4 text-gray-700" />
+                            <span className="text-sm text-gray-900">
+                              {group?.label}
+                            </span>
                           </div>
                           {detail && (
-                            <div className="text-xs text-gray-600 ml-6 mt-1">
+                            <div className="ml-6 mt-1 text-xs text-gray-600">
                               {detail}
                             </div>
                           )}
@@ -547,82 +544,179 @@ export function HelpRequestForm() {
                 </div>
               )}
 
-              {/* Special Needs - Show if exists */}
               {formData.specialNeeds && (
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <div className="text-xs text-gray-600 mb-2">ความต้องการพิเศษ</div>
-                  <div className="text-sm text-gray-900">{formData.specialNeeds}</div>
+                <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                  <div className="mb-2 text-xs text-gray-600">
+                    ความต้องการพิเศษ
+                  </div>
+                  <div className="text-sm text-gray-900">
+                    {formData.specialNeeds}
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Edit Special Needs */}
-            <div>
-              <label className="block text-sm text-gray-700 mb-2">
-                เพิ่มความต้องการพิเศษ (ถ้ามี)
-              </label>
+            <Field label="เพิ่มความต้องการพิเศษ (ถ้ามี)">
               <textarea
                 value={formData.specialNeeds}
-                onChange={(e) => setFormData({ ...formData, specialNeeds: e.target.value })}
+                onChange={e => setField('specialNeeds', e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none resize-none transition-all placeholder:text-gray-400 text-sm"
+                className={cn(INPUT_CLASS, 'resize-none text-sm')}
                 placeholder="เช่น ไม่สามารถขึ้นบันไดได้, ต้องการอาหารอ่อน, แพ้อาหารทะเล"
               />
-            </div>
+            </Field>
 
-            {/* Confirmation Notice */}
-            <div className="mt-6 bg-primary/5 border border-primary/20 rounded-lg p-4">
+            <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
               <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div className="text-sm text-gray-700">
-                  <p className="text-gray-900 mb-1">ก่อนส่งคำขอ กรุณาตรวจสอบข้อมูล</p>
+                  <p className="mb-1 text-gray-900">
+                    ก่อนส่งคำขอ กรุณาตรวจสอบข้อมูล
+                  </p>
                   <p className="text-xs text-gray-600">
-                    เราจะติดต่อกลับโดยเร็วที่สุด กรณีเร่งด่วนกรุณาโทร 191 หรือ 1669
+                    เราจะติดต่อกลับโดยเร็วที่สุด กรณีเร่งด่วนกรุณาโทร 191 หรือ
+                    1669
                   </p>
                 </div>
               </div>
             </div>
-          </div>
+          </Section>
         )}
 
-        {/* Navigation Buttons */}
         <div className="flex gap-3">
           {step > 1 && (
             <button
               type="button"
-              onClick={() => setStep(step - 1)}
-              className="flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors"
+              onClick={() => setStep(s => Math.max(1, s - 1))}
+              className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
               <span>ย้อนกลับ</span>
             </button>
           )}
-          
-          {step < totalSteps ? (
+
+          {step < TOTAL_STEPS ? (
             <button
               type="button"
-              onClick={handleNext}
-              disabled={!canProceed()}
-              className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-colors ${
-                canProceed()
-                  ? 'bg-primary hover:bg-[#e14a21] text-white'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
+              onClick={() => setStep(s => Math.min(TOTAL_STEPS, s + 1))}
+              disabled={!canProceed}
+              className={cn(
+                'flex flex-1 items-center justify-center gap-2 rounded-lg px-6 py-3 transition-colors',
+                canProceed
+                  ? 'bg-primary text-white hover:bg-[#e14a21]'
+                  : 'cursor-not-allowed bg-gray-200 text-gray-400'
+              )}
             >
               <span>ถัดไป</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
             <button
               type="submit"
-              className="flex-1 flex items-center justify-center gap-2 bg-primary hover:bg-[#e14a21] text-white px-6 py-3 rounded-lg transition-colors shadow-sm"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-sm transition-colors hover:bg-[#e14a21]"
             >
-              <CheckCircle2 className="w-5 h-5" />
+              <CheckCircle2 className="h-5 w-5" />
               <span>ส่งคำขอความช่วยเหลือ</span>
             </button>
           )}
         </div>
       </form>
+    </div>
+  );
+}
+
+function Section({
+  icon,
+  title,
+  subtitle,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-6">
+      <div className="mb-6 flex items-center gap-3">
+        <div className="rounded-lg bg-gray-100 p-2.5">{icon}</div>
+        <div>
+          <h3 className="text-gray-900">{title}</h3>
+          <p className="text-sm text-gray-500">{subtitle}</p>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-sm text-gray-700">
+        {label} {required && <span className="text-primary">*</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+function UrgencyButton({
+  onClick,
+  icon,
+  label,
+  className,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  className: string;
+}) {
+  return (
+    <button type="button" onClick={onClick} className={className}>
+      <div className="mx-auto mb-1 flex w-max flex-col items-center">
+        {icon}
+        <div className="text-xs text-gray-900">{label}</div>
+      </div>
+    </button>
+  );
+}
+
+type ReviewItem = { label: string; icon?: React.ReactNode };
+function ReviewBlock({
+  title,
+  icon,
+  items,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  items: ReviewItem[];
+}) {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        {icon}
+        <div className="text-xs text-gray-600">{title}</div>
+      </div>
+      <div className="space-y-1">
+        {items.map((item, idx) => (
+          <div
+            key={idx}
+            className="flex items-center gap-2 text-sm text-gray-600"
+          >
+            {item.icon}
+            <span className="text-gray-900">{item.label}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

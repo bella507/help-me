@@ -7,11 +7,12 @@ import {
   AlertTriangle,
   CheckCircle2,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface GuideSection {
   id: string;
   title: string;
-  icon: any;
+  icon: LucideIcon;
   color: string;
   bgColor: string;
   borderColor: string;
@@ -227,7 +228,7 @@ export function PreparationGuide() {
                     : 'border-gray-200 text-gray-600 hover:border-gray-300'
                 }`}
               >
-                <Icon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
                 <span className="text-xs sm:text-sm">{section.title}</span>
               </button>
             );
@@ -270,7 +271,7 @@ export function PreparationGuide() {
       {/* Important Notice */}
       <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 sm:p-4">
         <div className="flex gap-2 sm:gap-3">
-          <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-primary flex-shrink-0 mt-0.5" />
+          <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-primary shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-gray-700">
             <p className="text-gray-900 mb-1">ข้อควรจำ</p>
             <p className="text-[10px] sm:text-xs text-gray-600">

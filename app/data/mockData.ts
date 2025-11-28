@@ -589,7 +589,7 @@ export function initializeMockData() {
           return true; // Old data structure
         }
       }
-    } catch (e) {
+    } catch {
       return true;
     }
     return false;
