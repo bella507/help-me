@@ -5,6 +5,7 @@ import {
   type ChangeEvent,
   type ReactNode,
 } from 'react';
+import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Shield,
@@ -148,17 +149,17 @@ const DEFAULT_VOLUNTEERS: Volunteer[] = [
   },
 ];
 
-const TABS: { id: AdminTab; icon: LucideIcon; label: string }[] = [
-  { id: 'overview', icon: BarChart3, label: 'ภาพรวม' },
-  { id: 'requests', icon: AlertCircle, label: 'คำขอช่วยเหลือ' },
-  { id: 'volunteers', icon: Users, label: 'อาสาสมัคร' },
-  { id: 'news', icon: Newspaper, label: 'ข่าวสาร' },
-  { id: 'shelters', icon: Home, label: 'ศูนย์พักพิง' },
-  { id: 'risks', icon: AlertTriangle, label: 'พื้นที่เสี่ยง' },
-  { id: 'donations', icon: Package, label: 'ของบริจาค' },
-  { id: 'faq', icon: FileText, label: 'FAQ' },
-  { id: 'notifications', icon: Bell, label: 'แจ้งเตือน' },
-  { id: 'settings', icon: Settings, label: 'ตั้งค่า' },
+const TABS: { id: AdminTab; icon: LucideIcon; labelKey: string }[] = [
+  { id: 'overview', icon: BarChart3, labelKey: 'tabs.overview' },
+  { id: 'requests', icon: AlertCircle, labelKey: 'tabs.requests' },
+  { id: 'volunteers', icon: Users, labelKey: 'tabs.volunteers' },
+  { id: 'news', icon: Newspaper, labelKey: 'tabs.news' },
+  { id: 'shelters', icon: Home, labelKey: 'tabs.shelters' },
+  { id: 'risks', icon: AlertTriangle, labelKey: 'tabs.risks' },
+  { id: 'donations', icon: Package, labelKey: 'tabs.donations' },
+  { id: 'faq', icon: FileText, labelKey: 'tabs.faq' },
+  { id: 'notifications', icon: Bell, labelKey: 'tabs.notifications' },
+  { id: 'settings', icon: Settings, labelKey: 'tabs.settings' },
 ];
 
 const getCategoryLabel = (category: string) =>
@@ -259,6 +260,7 @@ function ModalShell({
 }
 
 export function AdminDashboard() {
+  const t = useTranslations('home.admin');
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
@@ -411,8 +413,10 @@ export function AdminDashboard() {
     );
 
   const verifyVolunteer = (id: string) => {
-    const updatedVolunteers = volunteers.map(vol =>
-      vol.id === id ? { ...vol, verified: true, status: 'active' } : vol
+    const updatedVolunteers: Volunteer[] = volunteers.map(vol =>
+      vol.id === id
+        ? { ...vol, verified: true, status: 'active' as Volunteer['status'] }
+        : vol
     );
     persistVolunteers(updatedVolunteers);
     toast.success('ยืนยันอาสาสมัครสำเร็จ');
@@ -684,9 +688,11 @@ export function AdminDashboard() {
               </div>
               <div>
                 <h1 className="text-base text-white sm:text-lg">
-                  ระบบจัดการผู้ดูแล
+                  {t('title')}
                 </h1>
-                <p className="text-xs text-white/80">Admin Dashboard</p>
+                <p className="text-xs text-white/80">
+                  {t('subtitle')}
+                </p>
               </div>
             </div>
             <Button
@@ -695,7 +701,7 @@ export function AdminDashboard() {
               className="bg-white/10 text-white hover:bg-white/20"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">ออกจากระบบ</span>
+              <span className="hidden sm:inline">{t('actions.logout')}</span>
             </Button>
           </div>
         </div>
@@ -716,7 +722,7 @@ export function AdminDashboard() {
               >
                 <tab.icon className="h-4 w-4" />
                 <span className="whitespace-nowrap text-xs sm:text-sm">
-                  {tab.label}
+                  {t(tab.labelKey as Parameters<typeof t>[0])}
                 </span>
               </button>
             ))}
@@ -1683,7 +1689,13 @@ function NewsModal({
   onSave: (data: Partial<NewsItem>) => void;
   onClose: () => void;
 }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    content: string;
+    category: string;
+    type: NewsItem['type'];
+    urgent: boolean;
+  }>({
     title: editingItem?.title || '',
     content: editingItem?.content || '',
     category: editingItem?.category || 'general',
@@ -1745,7 +1757,12 @@ function NewsModal({
           <label className="mb-2 block text-sm text-gray-700">ระดับ</label>
           <select
             value={formData.type}
-            onChange={e => setFormData({ ...formData, type: e.target.value })}
+            onChange={e =>
+              setFormData({
+                ...formData,
+                type: e.target.value as NewsItem['type'],
+              })
+            }
             className="w-full rounded-lg border-2 border-gray-200 px-4 py-2 focus:border-primary focus:outline-none"
           >
             <option value="info">ข้อมูล</option>

@@ -203,7 +203,7 @@ export const donationStorage = {
 
   getNeeded: (): DonationNeed[] => {
     const donations = donationStorage.getAll();
-    return donations.filter((d) => d.status === 'needed' || d.status === 'partial');
+    return donations.filter(d => d.status === 'urgent' || d.status === 'needed');
   },
 };
 

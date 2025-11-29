@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
-import type { LegendProps } from "recharts";
 import type {
   NameType,
   Payload as RechartsPayload,
@@ -127,7 +126,10 @@ interface ChartTooltipContentProps extends React.ComponentProps<"div"> {
   indicator?: "line" | "dot" | "dashed";
   nameKey?: string;
   labelKey?: string;
-  labelFormatter?: (value: NameType | undefined, payload: TooltipPayload[]) => React.ReactNode;
+  labelFormatter?: (
+    value: NameType | React.ReactNode | undefined,
+    payload: TooltipPayload[],
+  ) => React.ReactNode;
   labelClassName?: string;
   formatter?: (
     value: ValueType,
@@ -283,12 +285,12 @@ function ChartTooltipContent({
 
 const ChartLegend = RechartsPrimitive.Legend;
 
-type LegendPayload = NonNullable<LegendProps["payload"]>[number] & {
+type LegendPayload = RechartsPayload<ValueType, NameType> & {
   color?: string;
 };
 
 interface ChartLegendContentProps extends React.ComponentProps<"div"> {
-  payload?: LegendProps["payload"];
+  payload?: LegendPayload[];
   verticalAlign?: "top" | "bottom";
   hideIcon?: boolean;
   nameKey?: string;

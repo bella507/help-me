@@ -8,6 +8,7 @@ import { NotificationCenter } from '../NotificationCenter';
 type HomeHeaderProps = {
   darkMode: boolean;
   language: Language;
+  title: string;
   onToggleDarkMode: () => void;
   onToggleLanguage: () => void;
 };
@@ -15,6 +16,7 @@ type HomeHeaderProps = {
 export function HomeHeader({
   darkMode,
   language,
+  title,
   onToggleDarkMode,
   onToggleLanguage,
 }: HomeHeaderProps) {
@@ -32,7 +34,7 @@ export function HomeHeader({
               <Heart className="h-5 w-5 text-white" />
             </div>
             <span className={cn('text-sm', darkMode ? 'text-gray-100' : 'text-gray-900')}>
-              ศูนย์ช่วยเหลือผู้ประสบภัย
+              {title}
             </span>
           </div>
 

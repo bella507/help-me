@@ -6,16 +6,28 @@ import { cn } from '@/app/lib/utils';
 
 type SosControlsProps = {
   onRequest: () => void;
+  copy: {
+    modalTitle: string;
+    modalSubtitle: string;
+    callPoliceTitle: string;
+    callPoliceDesc: string;
+    callMedicalTitle: string;
+    callMedicalDesc: string;
+    shareLabel: string;
+    shareTitle: string;
+    shareText: string;
+    closeLabel: string;
+  };
 };
 
-export function SosControls({ onRequest }: SosControlsProps) {
+export function SosControls({ onRequest, copy }: SosControlsProps) {
   const [open, setOpen] = useState(false);
 
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'ต้องการความช่วยเหลือฉุกเฉิน!',
-        text: 'ฉันอยู่ในสถานการณ์ฉุกเฉิน กรุณาช่วยเหลือ!',
+        title: copy.shareTitle,
+        text: copy.shareText,
       });
     }
     setOpen(false);
@@ -43,10 +55,8 @@ export function SosControls({ onRequest }: SosControlsProps) {
             <div className="overflow-hidden rounded-2xl bg-white shadow-2xl">
               <div className="bg-red-600 p-6 text-center">
                 <AlertOctagon className="mx-auto mb-3 h-16 w-16 text-white" />
-                <h2 className="text-xl text-white">SOS ฉุกเฉิน</h2>
-                <p className="mt-1 text-sm text-red-100">
-                  โทรออกทันทีในสถานการณ์อันตราย
-                </p>
+                <h2 className="text-xl text-white">{copy.modalTitle}</h2>
+                <p className="mt-1 text-sm text-red-100">{copy.modalSubtitle}</p>
               </div>
 
               <div className="space-y-3 p-6">
@@ -56,10 +66,8 @@ export function SosControls({ onRequest }: SosControlsProps) {
                 >
                   <Phone className="h-6 w-6" />
                   <div className="text-left">
-                    <div className="text-lg">โทร 191</div>
-                    <div className="text-xs text-red-100">
-                      ศูนย์รับแจ้งเหตุฉุกเฉิน
-                    </div>
+                    <div className="text-lg">{copy.callPoliceTitle}</div>
+                    <div className="text-xs text-red-100">{copy.callPoliceDesc}</div>
                   </div>
                 </a>
 
@@ -69,10 +77,8 @@ export function SosControls({ onRequest }: SosControlsProps) {
                 >
                   <Phone className="h-6 w-6" />
                   <div className="text-left">
-                    <div className="text-lg">โทร 1669</div>
-                    <div className="text-xs text-red-100">
-                      รถฉุกเฉินการแพทย์
-                    </div>
+                    <div className="text-lg">{copy.callMedicalTitle}</div>
+                    <div className="text-xs text-red-100">{copy.callMedicalDesc}</div>
                   </div>
                 </a>
 
@@ -81,14 +87,14 @@ export function SosControls({ onRequest }: SosControlsProps) {
                   className="flex w-full items-center justify-center gap-3 rounded-xl bg-orange-600 px-6 py-4 text-white transition-colors hover:bg-orange-700"
                 >
                   <Share2 className="h-5 w-5" />
-                  <span>แชร์ตำแหน่งฉุกเฉิน</span>
+                  <span>{copy.shareLabel}</span>
                 </button>
 
                 <button
                   onClick={() => setOpen(false)}
                   className="w-full rounded-xl border-2 border-gray-300 px-6 py-3 text-gray-700 transition-colors hover:border-gray-400"
                 >
-                  ปิด
+                  {copy.closeLabel}
                 </button>
               </div>
             </div>

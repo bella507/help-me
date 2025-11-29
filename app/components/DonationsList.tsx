@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Package,
   MapPin,
@@ -22,6 +23,7 @@ type DonationCenter = {
 const donationNeeds: DonationNeed[] = [
   {
     id: '1',
+    item: 'อาหารและเครื่องดื่ม',
     category: 'อาหารและเครื่องดื่ม',
     items: [
       'น้ำดื่ม',
@@ -35,6 +37,7 @@ const donationNeeds: DonationNeed[] = [
   },
   {
     id: '2',
+    item: 'เสื้อผ้าและผ้าห่ม',
     category: 'เสื้อผ้าและผ้าห่ม',
     items: ['เสื้อผ้าสะอาด', 'ผ้าห่ม', 'หมอน', 'ผ้าเช็ดตัว', 'รองเท้า'],
     urgency: 'high',
@@ -42,6 +45,7 @@ const donationNeeds: DonationNeed[] = [
   },
   {
     id: '3',
+    item: 'ยาและเวชภัณฑ์',
     category: 'ยาและเวชภัณฑ์',
     items: [
       'ยาพื้นฐาน',
@@ -55,6 +59,7 @@ const donationNeeds: DonationNeed[] = [
   },
   {
     id: '4',
+    item: 'อุปกรณ์ทำความสะอาด',
     category: 'อุปกรณ์ทำความสะอาด',
     items: ['สบู่', 'ยาสีฟัน', 'แปรงสีฟัน', 'แชมพู', 'ผงซักฟอก'],
     urgency: 'medium',
@@ -62,6 +67,7 @@ const donationNeeds: DonationNeed[] = [
   },
   {
     id: '5',
+    item: 'อุปกรณ์สำหรับเด็ก',
     category: 'อุปกรณ์สำหรับเด็ก',
     items: ['นมผง', 'ผ้าอ้อม', 'ขวดนม', 'อาหารเด็ก', 'ของเล่น'],
     urgency: 'medium',
@@ -69,6 +75,7 @@ const donationNeeds: DonationNeed[] = [
   },
   {
     id: '6',
+    item: 'อุปกรณ์ไฟฟ้า',
     category: 'อุปกรณ์ไฟฟ้า',
     items: ['ไฟฉาย', 'ถ่าน', 'เพาเวอร์แบงค์', 'สายชาร์จ', 'พัดลมพกพา'],
     urgency: 'medium',
@@ -76,6 +83,7 @@ const donationNeeds: DonationNeed[] = [
   },
   {
     id: '7',
+    item: 'เครื่องใช้ในบ้าน',
     category: 'เครื่องใช้ในบ้าน',
     items: ['แก้วน้ำ', 'จานชาม', 'ช้อนส้อม', 'กระติกน้ำ', 'ถังน้ำ'],
     urgency: 'low',
@@ -83,6 +91,7 @@ const donationNeeds: DonationNeed[] = [
   },
   {
     id: '8',
+    item: 'อุปกรณ์การเรียน',
     category: 'อุปกรณ์การเรียน',
     items: ['สมุด', 'ปากกา', 'ดินสอ', 'สีเขียน', 'กระเป๋านักเรียน'],
     urgency: 'low',
@@ -126,9 +135,7 @@ const donationCenters: DonationCenter[] = [
 ];
 
 export function DonationsList() {
-  const [filter, setFilter] = useState<
-    'all' | 'urgent' | 'needed' | 'sufficient'
-  >('all');
+  const [filter, setFilter] = useState<'all' | DonationNeed['status']>('all');
 
   const filteredItems = useMemo(
     () =>
@@ -152,10 +159,11 @@ export function DonationsList() {
 }
 
 function StatusBadge({ status }: { status: DonationNeed['status'] }) {
+  const t = useTranslations('home.donationsList');
   const map = {
     urgent: {
       icon: TrendingUp,
-      text: 'ขาดมาก',
+      text: t('status.urgent'),
       bg: 'bg-red-50',
       border: 'border-red-200',
       color: 'text-red-700',
@@ -163,7 +171,7 @@ function StatusBadge({ status }: { status: DonationNeed['status'] }) {
     },
     needed: {
       icon: Minus,
-      text: 'ต้องการ',
+      text: t('status.needed'),
       bg: 'bg-orange-50',
       border: 'border-orange-200',
       color: 'text-orange-700',
@@ -171,7 +179,7 @@ function StatusBadge({ status }: { status: DonationNeed['status'] }) {
     },
     sufficient: {
       icon: TrendingDown,
-      text: 'เพียงพอ',
+      text: t('status.sufficient'),
       bg: 'bg-green-50',
       border: 'border-green-200',
       color: 'text-green-700',
@@ -227,9 +235,10 @@ function Header({
   filter,
   onFilterChange,
 }: {
-  filter: 'all' | 'urgent' | 'needed' | 'sufficient';
-  onFilterChange: (value: 'all' | 'urgent' | 'needed' | 'sufficient') => void;
+  filter: 'all' | DonationNeed['status'];
+  onFilterChange: (value: 'all' | DonationNeed['status']) => void;
 }) {
+  const t = useTranslations('home.donationsList');
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
       <div className="mb-3 flex items-center gap-2 sm:gap-3 sm:mb-4">
@@ -237,35 +246,33 @@ function Header({
           <Package className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
         </div>
         <div>
-          <h2 className="text-gray-900">รายการของบริจาค</h2>
-          <p className="text-xs text-gray-500 sm:text-sm">
-            สิ่งของที่ต้องการและจุดรับบริจาค
-          </p>
+          <h2 className="text-gray-900">{t('title')}</h2>
+          <p className="text-xs text-gray-500 sm:text-sm">{t('subtitle')}</p>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
         <FilterButton
           active={filter === 'all'}
-          label="ทั้งหมด"
+          label={t('filters.all')}
           activeClasses="border-primary bg-primary/5 text-primary"
           onClick={() => onFilterChange('all')}
         />
         <FilterButton
           active={filter === 'urgent'}
-          label="ขาดมาก"
+          label={t('filters.urgent')}
           activeClasses="border-red-500 bg-red-50 text-red-700"
           onClick={() => onFilterChange('urgent')}
         />
         <FilterButton
           active={filter === 'needed'}
-          label="ต้องการ"
+          label={t('filters.needed')}
           activeClasses="border-orange-500 bg-orange-50 text-orange-700"
           onClick={() => onFilterChange('needed')}
         />
         <FilterButton
           active={filter === 'sufficient'}
-          label="เพียงพอ"
+          label={t('filters.sufficient')}
           activeClasses="border-green-500 bg-green-50 text-green-700"
           onClick={() => onFilterChange('sufficient')}
         />
@@ -289,7 +296,7 @@ function DonationNeedsList({ items }: { items: DonationNeed[] }) {
             <StatusBadge status={item.status} />
           </div>
           <div className="flex flex-wrap gap-1.5">
-            {item.items.map((subItem, idx) => (
+            {(item.items ?? [item.item]).map((subItem, idx) => (
               <span
                 key={idx}
                 className="rounded border border-gray-200 bg-gray-50 px-2 py-0.5 text-[10px] text-gray-700 sm:px-2.5 sm:text-xs sm:py-1"
@@ -305,11 +312,12 @@ function DonationNeedsList({ items }: { items: DonationNeed[] }) {
 }
 
 function DonationCenters({ centers }: { centers: DonationCenter[] }) {
+  const t = useTranslations('home.donationsList');
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4 sm:p-6">
       <div className="mb-3 flex items-center gap-2 sm:mb-4">
         <MapPin className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
-        <h3 className="text-sm text-gray-900 sm:text-base">จุดรับบริจาค</h3>
+        <h3 className="text-sm text-gray-900 sm:text-base">{t('dropoff')}</h3>
       </div>
 
       <div className="space-y-2 sm:space-y-3">
@@ -338,7 +346,7 @@ function DonationCenters({ centers }: { centers: DonationCenter[] }) {
               href={`tel:${center.phone}`}
               className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs text-white transition-colors hover:bg-[#e14a21] sm:text-sm"
             >
-              <span>โทร {center.phone}</span>
+              <span>{t('call', { phone: center.phone })}</span>
             </a>
           </div>
         ))}
@@ -348,17 +356,17 @@ function DonationCenters({ centers }: { centers: DonationCenter[] }) {
 }
 
 function Guidelines() {
+  const t = useTranslations('home.donationsList.guidelines');
   return (
     <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 sm:p-4">
       <div className="flex gap-2 sm:gap-3">
         <AlertCircle className="h-4 w-4 shrink-0 text-primary sm:h-5 sm:w-5" />
         <div className="text-xs text-gray-700 sm:text-sm">
-          <p className="mb-1 text-gray-900">แนวทางการบริจาค</p>
+          <p className="mb-1 text-gray-900">{t('title')}</p>
           <ul className="list-inside list-disc space-y-1 text-[10px] text-gray-600 sm:text-xs">
-            <li>บริจาคเฉพาะของที่อยู่ในสภาพดี สะอาด ใช้งานได้</li>
-            <li>อาหารและยาต้องไม่หมดอายุ ระบุวันหมดอายุชัดเจน</li>
-            <li>เสื้อผ้าควรซักสะอาดก่อนบริจาค</li>
-            <li>ติดต่อศูนย์รับบริจาคก่อนหากมีของจำนวนมาก</li>
+            {t.raw('items')?.map((item: string, idx: number) => (
+              <li key={idx}>{item}</li>
+            ))}
           </ul>
         </div>
       </div>

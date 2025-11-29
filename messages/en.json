@@ -1,0 +1,584 @@
+{
+  "home": {
+    "title": "Disaster Relief Center",
+    "subtitle": "24/7 Support Available",
+    "request": "Request Help",
+    "news": "News",
+    "status": "Track Status",
+    "shelters": "Shelters",
+    "map": "Map",
+    "menu": "More",
+    "emergency": "Emergency Call",
+    "sos": "SOS Emergency",
+    "login": "Log in",
+    "hero": {
+      "badge": "Available 24/7",
+      "titleLine1": "Relief Support",
+      "titleLine2": "Center",
+      "description": "Here to help you stay safe, whatever happens.",
+      "stats": {
+        "openValue": "24/7",
+        "openLabel": "Always open",
+        "freeValue": "Free",
+        "freeLabel": "No service fee",
+        "responseValue": "<5",
+        "responseLabel": "min response"
+      },
+      "requestCta": "Request assistance",
+      "callButton": "Call 191 emergency",
+      "callNumber": "191",
+      "trust": {
+        "safe": "Safe",
+        "reliable": "Reliable",
+        "helped": "Helped 1,000+ people"
+      },
+      "emergencyCardTitle": "Emergency numbers",
+      "emergencyCardSubtitle": "Call instantly any time",
+      "numbers": [
+        {
+          "number": "191",
+          "title": "Police & fire",
+          "description": "Emergencies and incidents",
+          "tone": "red"
+        },
+        {
+          "number": "1669",
+          "title": "Medical hotline",
+          "description": "Ambulance and injuries",
+          "tone": "blue"
+        },
+        {
+          "number": "1784",
+          "title": "Disaster relief",
+          "description": "Floods, earthquakes",
+          "tone": "orange"
+        }
+      ]
+    },
+    "sosCopy": {
+      "modalTitle": "SOS Emergency",
+      "modalSubtitle": "Call immediately in danger",
+      "callPoliceTitle": "Call 191",
+      "callPoliceDesc": "Emergency dispatch",
+      "callMedicalTitle": "Call 1669",
+      "callMedicalDesc": "Medical ambulance",
+      "shareLabel": "Share emergency location",
+      "shareTitle": "I need emergency help!",
+      "shareText": "I am in an emergency situation. Please help!",
+      "closeLabel": "Close"
+    },
+    "menuItems": {
+      "emergency": {
+        "label": "Emergency contacts",
+        "description": "Important numbers"
+      },
+      "guide": {
+        "label": "Preparedness guide",
+        "description": "How to respond"
+      },
+      "volunteer": {
+        "label": "Volunteers",
+        "description": "Sign up to help"
+      },
+      "donations": {
+        "label": "Donations",
+        "description": "Needed supplies"
+      },
+      "risk": {
+        "label": "Risk areas",
+        "description": "Hazard information"
+      },
+      "faq": {
+        "label": "FAQ",
+        "description": "Common questions"
+      },
+      "myRequests": {
+        "label": "My requests",
+        "description": "Your submitted help"
+      },
+      "weather": {
+        "label": "Weather",
+        "description": "Check the forecast"
+      },
+      "dashboard": {
+        "label": "Dashboard",
+        "description": "Situation overview"
+      }
+    },
+    "common": {
+      "status": {
+        "all": "All",
+        "pending": "Pending",
+        "in-progress": "In progress",
+        "completed": "Completed"
+      },
+      "urgency": {
+        "high": "Urgent",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "categories": {
+        "food": "Food & water",
+        "food-water": "Food & water",
+        "shelter": "Shelter",
+        "medical": "Medical",
+        "clothing": "Clothing",
+        "evacuation": "Evacuation",
+        "transportation": "Transportation",
+        "rescue": "Emergency rescue",
+        "other": "Other"
+      },
+      "or": "or"
+    },
+    "requestForm": {
+      "stepLabel": "Step {step} of {total}",
+      "sections": {
+        "profile": {
+          "title": "Requester information",
+          "subtitle": "Your name and contact"
+        },
+        "location": {
+          "title": "Your location",
+          "subtitle": "So we can reach you"
+        },
+        "needs": {
+          "title": "What help do you need?",
+          "subtitle": "Choose one"
+        },
+        "risk": {
+          "title": "Special risk groups",
+          "subtitle": "Select all that apply (if any)"
+        },
+        "review": {
+          "title": "Review before sending",
+          "subtitle": "Please confirm the details"
+        }
+      },
+      "fields": {
+        "name": "Full name",
+        "namePlaceholder": "Enter full name",
+        "phone": "Phone number",
+        "phonePlaceholder": "0xx-xxx-xxxx",
+        "location": "Province/District",
+        "locationPlaceholder": "e.g. Bangkok, Bangkok Noi",
+        "address": "Detailed address (optional)",
+        "addressPlaceholder": "House number, street, subdistrict",
+        "description": "Describe the situation (optional)",
+        "descriptionPlaceholder": "e.g. House flooded 1m high, need food and water",
+        "specialNeeds": "Add special needs (optional)",
+        "specialNeedsPlaceholder": "e.g. Can't climb stairs, need soft food, seafood allergy"
+      },
+      "categories": {
+        "food": "Food/Water",
+        "shelter": "Shelter",
+        "medical": "Medical",
+        "clothing": "Clothing",
+        "evacuation": "Evacuation",
+        "other": "Other"
+      },
+      "urgency": {
+        "label": "Urgency level",
+        "low": "Not urgent",
+        "medium": "Medium",
+        "high": "Urgent"
+      },
+      "risk": {
+        "labels": {
+          "elderly": "Elderly (60+)",
+          "children": "Children (under 5)",
+          "disabled": "Disabled/bedridden",
+          "pregnant": "Pregnant",
+          "pets": "Pets",
+          "medical": "Needs medicine or medical devices"
+        },
+        "placeholders": {
+          "elderly": "e.g. 2 people, limited mobility, diabetes",
+          "children": "e.g. 1 child, 3 years old",
+          "disabled": "e.g. wheelchair user, needs assistive device",
+          "pregnant": "e.g. 7 months pregnant",
+          "pets": "e.g. 2 large dogs, 1 cat",
+          "medical": "e.g. blood pressure meds, glucose monitor, oxygen"
+        },
+        "emptyHint": "If there are no special risk groups, tap next"
+      },
+      "review": {
+        "profile": "Requester information",
+        "address": "Address",
+        "needs": "Requested help",
+        "risks": "Special risk groups",
+        "specialNeeds": "Special needs",
+        "alertTitle": "Before submitting, please review",
+        "alertSubtitle": "We'll contact you as soon as possible. For urgent cases call 191 or 1669."
+      },
+      "buttons": {
+        "back": "Back",
+        "next": "Next",
+        "submit": "Submit help request"
+      },
+      "toastSuccess": "Help request submitted successfully"
+    },
+    "requests": {
+      "heading": "Track request status",
+      "subheading": "Search by phone number",
+      "searchPlaceholder": "0xx-xxx-xxxx",
+      "showing": "Showing {count} requests",
+      "filteredHint": "(filtered by status)",
+      "urgencyToggle": "Urgency first",
+      "ratingButton": "Rate this request",
+      "specialGroupTitle": "Special risk groups",
+      "noteTitle": "Note",
+      "progressTitle": "Progress",
+      "noSpecialGroupHint": "If there are no special groups, tap next",
+      "riskCounts": {
+        "elderly": "Elderly {count} person(s)",
+        "children": "Children {count} person(s)",
+        "disabled": "Person with disability",
+        "pregnant": "Pregnant {count} person(s)",
+        "pets": "Pets {count} animal(s)",
+        "medical": "Needs medicine/equipment"
+      },
+      "toggle": {
+        "show": "Show details",
+        "hide": "Hide details"
+      },
+      "empty": {
+        "defaultTitle": "No help requests yet",
+        "defaultSubtitle": "Enter a phone number to search",
+        "statusTitle": "No requests in this status",
+        "statusSubtitle": "Try another status",
+        "phoneTitle": "No requests match this phone number",
+        "phoneSubtitle": "Try another number"
+      }
+    },
+    "dashboard": {
+      "title": "Overview dashboard",
+      "subtitle": "Statistics and summary",
+      "cards": {
+        "total": "Total requests",
+        "pending": "Pending",
+        "completed": "Completed",
+        "urgent": "Urgent",
+        "volunteers": "Volunteers",
+        "shelters": "Shelters",
+        "unit": "requests",
+        "people": "people",
+        "places": "locations"
+      },
+      "sections": {
+        "status": "Request status",
+        "categories": "Help categories",
+        "topAreas": "Top areas needing help"
+      },
+      "info": {
+        "title": "Real-time updates",
+        "subtitle": "Automatically refreshed every 5 seconds from the system"
+      }
+    },
+    "myRequests": {
+      "title": "My requests",
+      "subtitle": "Check your help requests",
+      "enterPhone": "Please enter your phone number to view your requests",
+      "phonePlaceholder": "0XX-XXX-XXXX",
+      "viewButton": "View my requests",
+      "changeNumber": "Change number",
+      "total": "{count} total requests",
+      "emptyTitle": "No help requests yet",
+      "emptySubtitle": "Requests you send will appear here",
+      "actions": {
+        "call": "Call",
+        "share": "Share",
+        "delete": "Cancel"
+      },
+      "confirmDelete": "Do you want to cancel this request?",
+      "shareTitle": "Help request",
+      "shareTemplate": "Help request: {category}\nLocation: {location}\nContact: {phone}",
+      "copyAlert": "Copied to clipboard"
+    },
+    "emergencyContacts": {
+      "heading": "Emergency numbers",
+      "subheading": "Tap to call immediately or see more channels",
+      "extraNumbers": "More numbers",
+      "otherChannels": "Other channels",
+      "contacts": {
+        "police": {
+          "name": "Police",
+          "description": "Crime, danger, accidents",
+          "numbers": {
+            "primary": "Emergency line",
+            "tourist": "Tourist police hotline",
+            "complaint": "Complaints center"
+          },
+          "channels": {
+            "line": "Police LINE",
+            "website": "Website"
+          }
+        },
+        "medical": {
+          "name": "Emergency medical",
+          "description": "Injuries, ambulance, first aid",
+          "numbers": {
+            "primary": "Emergency ambulance",
+            "hospital": "Hospital coordination",
+            "health": "Public health hotline"
+          },
+          "channels": {
+            "website": "Dispatch center"
+          }
+        },
+        "fire": {
+          "name": "Fire Department",
+          "description": "Fire, disaster",
+          "numbers": {
+            "primary": "Emergency line",
+            "bma": "Bangkok hotline",
+            "disaster": "Disaster prevention center"
+          },
+          "channels": {
+            "line": "Fire Department LINE"
+          }
+        },
+        "disaster": {
+          "name": "Disaster relief center",
+          "description": "Floods, earthquakes, natural disasters",
+          "numbers": {
+            "primary": "Coordination center",
+            "office": "Disaster prevention office"
+          },
+          "channels": {
+            "line": "Disaster LINE",
+            "website": "Website",
+            "email": "Email"
+          }
+        },
+        "health": {
+          "name": "Public health hotline",
+          "description": "Health consultation, communicable diseases",
+          "numbers": {
+            "primary": "Public health hotline",
+            "disease": "Emerging diseases"
+          }
+        },
+        "electricity": {
+          "name": "Electricity",
+          "description": "Power outage, electrical issues",
+          "numbers": {
+            "primary": "MEA Bangkok",
+            "provincial": "PEA Provincial"
+          },
+          "channels": {
+            "line": "MEA LINE",
+            "website": "Website"
+          }
+        },
+        "water": {
+          "name": "Waterworks",
+          "description": "Water supply issues, pipe leaks",
+          "numbers": {
+            "primary": "MWA Bangkok",
+            "provincial": "PWA Provincial"
+          },
+          "channels": {
+            "line": "MWA LINE"
+          }
+        }
+      }
+    },
+    "sheltersList": {
+      "title": "Shelters",
+      "subtitle": "Available shelter locations",
+      "filters": {
+        "all": "All",
+        "available": "Available",
+        "limited": "Limited",
+        "full": "Full"
+      },
+      "occupancy": "{occupied}/{capacity} people",
+      "addressLabel": "Address",
+      "capacityLabel": "Capacity",
+      "callAction": "Call",
+      "noData": "No shelters available",
+      "notice": {
+        "title": "Note",
+        "body": "Information may change. Please call before visiting. For emergencies call 191 or 1669."
+      }
+    },
+    "donationsList": {
+      "title": "Donation items",
+      "subtitle": "Needed items and drop-off points",
+      "filters": {
+        "all": "All",
+        "urgent": "Critical",
+        "needed": "Needed",
+        "sufficient": "Sufficient"
+      },
+      "status": {
+        "urgent": "Critical",
+        "needed": "Needed",
+        "sufficient": "Sufficient"
+      },
+      "guidelines": {
+        "title": "Donation guidelines",
+        "items": [
+          "Donate clean, usable items only",
+          "Food and medicine must be within expiry date and labeled",
+          "Wash clothes before donating",
+          "Contact the center first for large quantities"
+        ]
+      },
+      "dropoff": "Drop-off points",
+      "call": "Call {phone}"
+    },
+    "volunteerDashboard": {
+      "title": "Volunteer system",
+      "subtitle": "Volunteer Dashboard",
+      "stats": {
+        "myTasks": "My tasks",
+        "available": "New tasks"
+      },
+      "tabs": {
+        "myTasks": "My tasks",
+        "available": "Available tasks",
+        "myTasksWithCount": "My tasks ({count})",
+        "availableWithCount": "Available tasks ({count})"
+      },
+      "counts": {
+        "myTasks": "{count} task(s) to follow",
+        "available": "{count} task(s) available"
+      },
+      "actions": {
+        "logout": "Logout",
+        "navigate": "Navigate",
+        "addNotes": "Add notes",
+        "complete": "Mark done",
+        "accept": "Accept task",
+        "viewMap": "View map",
+        "call": "Call",
+        "save": "Save",
+        "cancel": "Cancel"
+      },
+      "fields": {
+        "location": "Location",
+        "phone": "Phone",
+        "description": "Details"
+      },
+      "notes": {
+        "admin": "Admin note",
+        "mine": "My note",
+        "placeholder": "Add progress or notes..."
+      },
+      "empty": {
+        "myTasks": "You have no tasks",
+        "viewAvailable": "View available tasks",
+        "available": "No new tasks right now"
+      },
+      "toast": {
+        "accepted": "Task accepted!",
+        "completed": "Task completed! Thank you for helping",
+        "notesSaved": "Notes saved"
+      }
+    },
+    "volunteerForm": {
+      "title": "Volunteer registration",
+      "subtitle": "Join the effort to help affected people",
+      "toastSuccess": "Registration submitted",
+      "success": {
+        "title": "Registration complete",
+        "subtitle": "Thank you for volunteering. We will contact you when there is a suitable activity.",
+        "again": "Register again",
+        "nextTitle": "Next steps",
+        "nextSubtitle": "We will contact you within 3-5 business days to confirm your volunteer status and share orientation details."
+      },
+      "fields": {
+        "name": "Full name",
+        "namePlaceholder": "Enter full name",
+        "phone": "Phone number",
+        "phonePlaceholder": "0xx-xxx-xxxx",
+        "email": "Email",
+        "emailPlaceholder": "example@email.com",
+        "age": "Age",
+        "agePlaceholder": "e.g. 30",
+        "area": "Preferred area",
+        "areaPlaceholder": "Select area",
+        "availability": "Available times",
+        "skills": "Skills",
+        "experience": "Experience",
+        "experiencePlaceholder": "e.g. Past volunteer/rescue experience",
+        "transport": "Vehicles/Equipment",
+        "emergencyContact": "Emergency contact name",
+        "emergencyContactPlaceholder": "Full name",
+        "emergencyPhone": "Emergency contact phone",
+        "emergencyPhonePlaceholder": "0xx-xxx-xxxx"
+      },
+      "availability": {
+        "weekday-morning": "Weekday morning",
+        "weekday-afternoon": "Weekday afternoon",
+        "weekday-evening": "Weekday evening",
+        "weekend-morning": "Weekend morning",
+        "weekend-afternoon": "Weekend afternoon",
+        "weekend-evening": "Weekend evening",
+        "emergency": "Anytime (emergency)"
+      },
+      "skills": {
+        "first-aid": "First aid",
+        "cooking": "Cooking",
+        "driving": "Driving",
+        "boating": "Boat operation",
+        "drone": "Drone operation",
+        "construction": "Maintenance/repair",
+        "counseling": "Counseling",
+        "teaching": "Childcare/Teaching",
+        "translation": "Translation",
+        "it": "Computer/IT",
+        "photography": "Photography/Data capture",
+        "swimming": "Swimming/Water rescue",
+        "general": "General support"
+      },
+      "transportGroups": {
+        "land": "Land",
+        "water": "Water",
+        "air": "Air"
+      },
+      "transport": {
+        "car": "Car",
+        "suv": "SUV/Pickup",
+        "motorcycle": "Motorcycle",
+        "truck": "Truck",
+        "van": "Van",
+        "bicycle": "Bicycle",
+        "boat": "Boat",
+        "speedboat": "Speedboat",
+        "longtail": "Long-tail boat",
+        "raft": "Raft/Rescue boat",
+        "jet-ski": "Jet ski",
+        "drone": "Drone (small)",
+        "large-drone": "Drone (large)",
+        "helicopter": "Helicopter",
+        "ultralight": "Light aircraft"
+      },
+      "buttons": {
+        "back": "Back",
+        "next": "Next",
+        "submit": "Submit volunteer info"
+      }
+    },
+    "admin": {
+      "title": "Admin Management",
+      "subtitle": "Admin Dashboard",
+      "tabs": {
+        "overview": "Overview",
+        "requests": "Requests",
+        "volunteers": "Volunteers",
+        "news": "News",
+        "shelters": "Shelters",
+        "risks": "Risk areas",
+        "donations": "Donations",
+        "faq": "FAQ",
+        "notifications": "Notifications",
+        "settings": "Settings"
+      },
+      "actions": {
+        "logout": "Logout"
+      }
+    }
+  }
+}

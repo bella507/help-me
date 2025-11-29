@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Users, CheckCircle2, ChevronRight, ChevronLeft, Car, Ship, Plane } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn, generateId, volunteerStorage } from '@/app/lib/utils';
@@ -19,54 +20,54 @@ type VolunteerFormData = {
 };
 
 const availabilityOptions = [
-  { id: 'weekday-morning', label: 'วันธรรมดา เช้า' },
-  { id: 'weekday-afternoon', label: 'วันธรรมดา บ่าย' },
-  { id: 'weekday-evening', label: 'วันธรรมดา เย็น' },
-  { id: 'weekend-morning', label: 'วันหยุด เช้า' },
-  { id: 'weekend-afternoon', label: 'วันหยุด บ่าย' },
-  { id: 'weekend-evening', label: 'วันหยุด เย็น' },
-  { id: 'emergency', label: 'ตลอดเวลา (กรณีฉุกเฉิน)' },
-];
+  'weekday-morning',
+  'weekday-afternoon',
+  'weekday-evening',
+  'weekend-morning',
+  'weekend-afternoon',
+  'weekend-evening',
+  'emergency',
+] as const;
 
 const skillOptions = [
-  { id: 'first-aid', label: 'ปฐมพยาบาล', icon: '🏥' },
-  { id: 'cooking', label: 'ทำอาหาร', icon: '🍳' },
-  { id: 'driving', label: 'ขับรถ', icon: '🚗' },
-  { id: 'boating', label: 'ขับเรือ', icon: '⛵' },
-  { id: 'drone', label: 'บังคับโดรน', icon: '🚁' },
-  { id: 'construction', label: 'ช่างซ่อมบำรุง', icon: '🔧' },
-  { id: 'counseling', label: 'ให้คำปรึกษา', icon: '💬' },
-  { id: 'teaching', label: 'สอน/ดูแลเด็ก', icon: '📚' },
-  { id: 'translation', label: 'แปลภาษา', icon: '🌐' },
-  { id: 'it', label: 'คอมพิวเตอร์/IT', icon: '💻' },
-  { id: 'photography', label: 'ถ่ายภาพ/บันทึกข้อมูล', icon: '📸' },
-  { id: 'swimming', label: 'ว่ายน้ำ/ช่วยชีวิตทางน้ำ', icon: '🏊' },
-  { id: 'general', label: 'งานทั่วไป', icon: '🤝' },
-];
+  { id: 'first-aid', icon: '🏥' },
+  { id: 'cooking', icon: '🍳' },
+  { id: 'driving', icon: '🚗' },
+  { id: 'boating', icon: '⛵' },
+  { id: 'drone', icon: '🚁' },
+  { id: 'construction', icon: '🔧' },
+  { id: 'counseling', icon: '💬' },
+  { id: 'teaching', icon: '📚' },
+  { id: 'translation', icon: '🌐' },
+  { id: 'it', icon: '💻' },
+  { id: 'photography', icon: '📸' },
+  { id: 'swimming', icon: '🏊' },
+  { id: 'general', icon: '🤝' },
+] as const;
 
 const transportOptions = {
   land: [
-    { id: 'car', label: 'รถยนต์', icon: Car },
-    { id: 'suv', label: 'รถ SUV/กระบะ', icon: Car },
-    { id: 'motorcycle', label: 'มอเตอร์ไซค์', icon: Car },
-    { id: 'truck', label: 'รถบรรทุก', icon: Car },
-    { id: 'van', label: 'รถตู้', icon: Car },
-    { id: 'bicycle', label: 'จักรยาน', icon: Car },
+    { id: 'car', icon: Car },
+    { id: 'suv', icon: Car },
+    { id: 'motorcycle', icon: Car },
+    { id: 'truck', icon: Car },
+    { id: 'van', icon: Car },
+    { id: 'bicycle', icon: Car },
   ],
   water: [
-    { id: 'boat', label: 'เรือยนต์', icon: Ship },
-    { id: 'speedboat', label: 'เรือเร็ว', icon: Ship },
-    { id: 'longtail', label: 'เรือหางยาว', icon: Ship },
-    { id: 'raft', label: 'แพ/เรือพยาบาล', icon: Ship },
-    { id: 'jet-ski', label: 'เจ็ทสกี', icon: Ship },
+    { id: 'boat', icon: Ship },
+    { id: 'speedboat', icon: Ship },
+    { id: 'longtail', icon: Ship },
+    { id: 'raft', icon: Ship },
+    { id: 'jet-ski', icon: Ship },
   ],
   air: [
-    { id: 'drone', label: 'โดรน (ขนาดเล็ก)', icon: Plane },
-    { id: 'large-drone', label: 'โดรนขนาดใหญ่', icon: Plane },
-    { id: 'helicopter', label: 'เฮลิคอปเตอร์', icon: Plane },
-    { id: 'ultralight', label: 'เครื่องบินเล็ก', icon: Plane },
+    { id: 'drone', icon: Plane },
+    { id: 'large-drone', icon: Plane },
+    { id: 'helicopter', icon: Plane },
+    { id: 'ultralight', icon: Plane },
   ],
-};
+} as const;
 
 const areas = [
   'พระนคร',
@@ -136,6 +137,7 @@ const EMPTY_FORM: VolunteerFormData = {
 };
 
 export function VolunteerForm() {
+  const t = useTranslations('home.volunteerForm');
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<VolunteerFormData>(EMPTY_FORM);
@@ -162,7 +164,7 @@ export function VolunteerForm() {
       createdAt: new Date().toISOString(),
     };
     volunteerStorage.add(newVolunteer);
-    toast.success('ลงทะเบียนสำเร็จ');
+    toast.success(t('toastSuccess'));
     setSubmitted(true);
   };
 
@@ -187,24 +189,20 @@ export function VolunteerForm() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
             <CheckCircle2 className="h-8 w-8 text-green-600" />
           </div>
-          <h2 className="mb-2 text-gray-900">ลงทะเบียนสำเร็จ</h2>
-          <p className="mb-6 text-sm text-gray-600">
-            ขอบคุณที่ร่วมเป็นอาสาสมัคร เราจะติดต่อกลับเมื่อมีกิจกรรมที่เหมาะสม
-          </p>
+          <h2 className="mb-2 text-gray-900">{t('success.title')}</h2>
+          <p className="mb-6 text-sm text-gray-600">{t('success.subtitle')}</p>
           <button
             onClick={resetForm}
             className="rounded-lg bg-primary px-6 py-2.5 text-white transition-colors hover:bg-[#e14a21]"
           >
-            ลงทะเบียนอีกครั้ง
+            {t('success.again')}
           </button>
         </div>
 
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
           <div className="text-sm text-gray-700">
-            <p className="mb-1 text-gray-900">ขั้นตอนต่อไป</p>
-            <p className="text-xs text-gray-600">
-              ท่านจะได้รับการติดต่อกลับภายใน 3-5 วันทำการ เพื่อยืนยันการเป็นอาสาสมัครและรับข้อมูลการปฐมนิเทศ
-            </p>
+            <p className="mb-1 text-gray-900">{t('success.nextTitle')}</p>
+            <p className="text-xs text-gray-600">{t('success.nextSubtitle')}</p>
           </div>
         </div>
       </div>
@@ -219,8 +217,8 @@ export function VolunteerForm() {
             <Users className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-gray-900">ลงทะเบียนอาสาสมัคร</h2>
-            <p className="text-sm text-gray-500">ร่วมเป็นส่วนหนึ่งในการช่วยเหลือผู้ประสบภัย</p>
+            <h2 className="text-gray-900">{t('title')}</h2>
+            <p className="text-sm text-gray-500">{t('subtitle')}</p>
           </div>
         </div>
 
@@ -244,30 +242,30 @@ export function VolunteerForm() {
         {step === 1 && (
           <div className="space-y-4">
             <LabeledInput
-              label="ชื่อ-นามสกุล"
+              label={t('fields.name')}
               value={formData.name}
               onChange={(v) => setFormData((p) => ({ ...p, name: v }))}
-              placeholder="กรอกชื่อ-นามสกุล"
+              placeholder={t('fields.namePlaceholder')}
               required
             />
             <LabeledInput
-              label="เบอร์โทรศัพท์"
+              label={t('fields.phone')}
               value={formData.phone}
               onChange={(v) => setFormData((p) => ({ ...p, phone: v }))}
-              placeholder="0xx-xxx-xxxx"
+              placeholder={t('fields.phonePlaceholder')}
               required
             />
             <LabeledInput
-              label="อีเมล"
+              label={t('fields.email')}
               value={formData.email}
               onChange={(v) => setFormData((p) => ({ ...p, email: v }))}
-              placeholder="example@email.com"
+              placeholder={t('fields.emailPlaceholder')}
             />
             <LabeledInput
-              label="อายุ"
+              label={t('fields.age')}
               value={formData.age}
               onChange={(v) => setFormData((p) => ({ ...p, age: v }))}
-              placeholder="เช่น 30"
+              placeholder={t('fields.agePlaceholder')}
             />
           </div>
         )}
@@ -275,13 +273,15 @@ export function VolunteerForm() {
         {step === 2 && (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm text-gray-700">พื้นที่ที่สะดวก</label>
+              <label className="mb-2 block text-sm text-gray-700">
+                {t('fields.area')}
+              </label>
               <select
                 value={formData.area}
                 onChange={(e) => setFormData((p) => ({ ...p, area: e.target.value }))}
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="">เลือกพื้นที่</option>
+                <option value="">{t('fields.areaPlaceholder')}</option>
                 {areas.map((area) => (
                   <option key={area} value={area}>
                     {area}
@@ -291,21 +291,23 @@ export function VolunteerForm() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm text-gray-700">ช่วงเวลาที่สะดวก</label>
+              <label className="mb-2 block text-sm text-gray-700">
+                {t('fields.availability')}
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 {availabilityOptions.map((option) => {
-                  const active = formData.availability.includes(option.id);
+                  const active = formData.availability.includes(option);
                   return (
                     <button
-                      key={option.id}
+                      key={option}
                       type="button"
-                      onClick={() => toggleSelection('availability', option.id)}
+                      onClick={() => toggleSelection('availability', option)}
                       className={cn(
                         'rounded-lg border-2 px-3 py-2 text-left text-xs transition-all sm:text-sm',
                         active ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 hover:border-gray-300'
                       )}
                     >
-                      {option.label}
+                      {t(`availability.${option}`)}
                     </button>
                   );
                 })}
@@ -317,7 +319,9 @@ export function VolunteerForm() {
         {step === 3 && (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm text-gray-700">ทักษะที่มี</label>
+              <label className="mb-2 block text-sm text-gray-700">
+                {t('fields.skills')}
+              </label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {skillOptions.map((skill) => {
                   const active = formData.skills.includes(skill.id);
@@ -332,7 +336,7 @@ export function VolunteerForm() {
                       )}
                     >
                       <span>{skill.icon}</span>
-                      <span>{skill.label}</span>
+                      <span>{t(`skills.${skill.id}`)}</span>
                     </button>
                   );
                 })}
@@ -340,13 +344,15 @@ export function VolunteerForm() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm text-gray-700">ประสบการณ์</label>
+              <label className="mb-2 block text-sm text-gray-700">
+                {t('fields.experience')}
+              </label>
               <textarea
                 value={formData.experience}
                 onChange={(e) => setFormData((p) => ({ ...p, experience: e.target.value }))}
                 rows={3}
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder="เช่น เคยช่วยงานอาสา/กู้ภัยที่ไหน ประสบการณ์ด้านใด"
+                placeholder={t('fields.experiencePlaceholder')}
               />
             </div>
           </div>
@@ -355,12 +361,14 @@ export function VolunteerForm() {
         {step === 4 && (
           <div className="space-y-4">
             <div>
-              <label className="mb-2 block text-sm text-gray-700">พาหนะ/อุปกรณ์ที่มี</label>
+              <label className="mb-2 block text-sm text-gray-700">
+                {t('fields.transport')}
+              </label>
               <div className="space-y-3">
                 {Object.entries(transportOptions).map(([group, options]) => (
                   <div key={group}>
                     <div className="mb-2 text-xs text-gray-500">
-                      {group === 'land' ? 'ทางบก' : group === 'water' ? 'ทางน้ำ' : 'ทางอากาศ'}
+                      {t(`transportGroups.${group as 'land' | 'water' | 'air'}`)}
                     </div>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {options.map((option) => {
@@ -377,7 +385,7 @@ export function VolunteerForm() {
                             )}
                           >
                             <Icon className="h-4 w-4" />
-                            <span>{option.label}</span>
+                            <span>{t(`transport.${option.id}`)}</span>
                           </button>
                         );
                       })}
@@ -389,16 +397,16 @@ export function VolunteerForm() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <LabeledInput
-                label="ชื่อผู้ติดต่อกรณีฉุกเฉิน"
+                label={t('fields.emergencyContact')}
                 value={formData.emergencyContact}
                 onChange={(v) => setFormData((p) => ({ ...p, emergencyContact: v }))}
-                placeholder="ชื่อ-นามสกุล"
+                placeholder={t('fields.emergencyContactPlaceholder')}
               />
               <LabeledInput
-                label="เบอร์ติดต่อฉุกเฉิน"
+                label={t('fields.emergencyPhone')}
                 value={formData.emergencyPhone}
                 onChange={(v) => setFormData((p) => ({ ...p, emergencyPhone: v }))}
-                placeholder="0xx-xxx-xxxx"
+                placeholder={t('fields.emergencyPhonePlaceholder')}
               />
             </div>
           </div>
@@ -413,7 +421,7 @@ export function VolunteerForm() {
             className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>ย้อนกลับ</span>
+            <span>{t('buttons.back')}</span>
           </button>
         )}
 
@@ -427,7 +435,7 @@ export function VolunteerForm() {
               canNext ? 'bg-primary text-white hover:bg-[#e14a21]' : 'cursor-not-allowed bg-gray-200 text-gray-400'
             )}
           >
-            <span>ถัดไป</span>
+            <span>{t('buttons.next')}</span>
             <ChevronRight className="h-4 w-4" />
           </button>
         ) : (
@@ -437,7 +445,7 @@ export function VolunteerForm() {
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-sm transition-colors hover:bg-[#e14a21]"
           >
             <CheckCircle2 className="h-5 w-5" />
-            <span>ส่งข้อมูลอาสาสมัคร</span>
+            <span>{t('buttons.submit')}</span>
           </button>
         )}
       </div>

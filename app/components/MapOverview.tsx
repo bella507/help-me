@@ -20,6 +20,7 @@ import {
 
 type RequestWithCoord = HelpRequest & {
   coordinates?: { x: number; y: number };
+  address?: string;
 };
 type StatusFilter = 'all' | HelpRequest['status'];
 type UrgencyFilter = 'all' | HelpRequest['urgency'];

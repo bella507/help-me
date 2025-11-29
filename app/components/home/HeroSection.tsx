@@ -4,9 +4,28 @@ import { cn } from '@/app/lib/utils';
 type HeroSectionProps = {
   darkMode: boolean;
   onRequest: () => void;
+  copy: {
+    badge: string;
+    titleLine1: string;
+    titleLine2: string;
+    description: string;
+    stats: { value: string; label: string }[];
+    requestCta: string;
+    callButton: string;
+    callNumber: string;
+    trust: { safe: string; reliable: string; helped: string };
+    emergencyCardTitle: string;
+    emergencyCardSubtitle: string;
+    numbers: Array<{
+      number: string;
+      title: string;
+      description: string;
+      tone: 'red' | 'blue' | 'orange';
+    }>;
+  };
 };
 
-export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
+export function HeroSection({ darkMode, onRequest, copy }: HeroSectionProps) {
   return (
     <div className="relative overflow-hidden border-b-2 border-gray-100 bg-linear-to-br from-gray-50 via-white to-orange-50">
       <div
@@ -26,9 +45,7 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
                   <div className="h-3 w-3 animate-pulse rounded-full bg-green-500" />
                   <div className="absolute inset-0 h-3 w-3 animate-ping rounded-full bg-green-400" />
                 </div>
-                <span className="text-sm text-green-700">
-                  พร้อมให้บริการตลอด 24 ชั่วโมง
-                </span>
+                <span className="text-sm text-green-700">{copy.badge}</span>
               </div>
             </div>
 
@@ -39,9 +56,9 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
                   darkMode ? 'text-gray-100' : 'text-gray-900'
                 )}
               >
-                ศูนย์ช่วยเหลือ
+                {copy.titleLine1}
                 <br />
-                ผู้ประสบภัย
+                {copy.titleLine2}
               </h1>
               <p
                 className={cn(
@@ -49,14 +66,14 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
                   darkMode ? 'text-gray-400' : 'text-gray-600'
                 )}
               >
-                พร้อมดูแลคุณทุกขณะ ไม่ว่าจะเกิดอะไรขึ้น
+                {copy.description}
               </p>
             </div>
 
             <div className="mx-auto grid max-w-md grid-cols-3 gap-3 sm:gap-4 lg:mx-0">
-              <StatCard value="24/7" label="เปิดบริการ" />
-              <StatCard value="ฟรี" label="ไม่มีค่าใช้จ่าย" />
-              <StatCard value="<5" label="นาที ตอบรับ" />
+              {copy.stats.map(stat => (
+                <StatCard key={stat.label} value={stat.value} label={stat.label} />
+              ))}
             </div>
 
             <div className="flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
@@ -67,16 +84,16 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
                 <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                 <span className="relative flex items-center justify-center gap-2 text-lg">
                   <FileText className="h-5 w-5" />
-                  ขอความช่วยเหลือเลย
+                  {copy.requestCta}
                 </span>
               </button>
               <a
-                href="tel:191"
+                href={`tel:${copy.callNumber}`}
                 className="rounded-xl border-2 border-gray-200 px-8 py-4 text-gray-900 shadow-sm transition-all hover:border-primary hover:bg-gray-50 hover:shadow-md"
               >
                 <span className="flex items-center justify-center gap-2 text-lg">
                   <Phone className="h-5 w-5" />
-                  โทร 191 ฉุกเฉิน
+                  {copy.callButton}
                 </span>
               </a>
             </div>
@@ -84,17 +101,17 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
             <div className="flex items-center justify-center gap-4 pt-2 text-sm text-gray-500 lg:justify-start">
               <div className="flex items-center gap-1.5">
                 <Shield className="h-4 w-4" />
-                <span>ปลอดภัย</span>
+                <span>{copy.trust.safe}</span>
               </div>
               <span className="text-gray-300">•</span>
               <div className="flex items-center gap-1.5">
                 <Heart className="h-4 w-4" />
-                <span>เชื่อถือได้</span>
+                <span>{copy.trust.reliable}</span>
               </div>
               <span className="text-gray-300">•</span>
               <div className="flex items-center gap-1.5">
                 <Users className="h-4 w-4" />
-                <span>ช่วยเหลือแล้ว 1,000+ คน</span>
+                <span>{copy.trust.helped}</span>
               </div>
             </div>
           </div>
@@ -105,30 +122,19 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
                 <div className="mb-3 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-linear-to-br from-primary to-orange-600 shadow-lg">
                   <Phone className="h-8 w-8 text-white" />
                 </div>
-                <h3 className="mb-1 text-xl text-gray-900">หมายเลขฉุกเฉิน</h3>
-                <p className="text-sm text-gray-600">
-                  โทรออกได้ทันทีตลอด 24 ชั่วโมง
-                </p>
+                <h3 className="mb-1 text-xl text-gray-900">{copy.emergencyCardTitle}</h3>
+                <p className="text-sm text-gray-600">{copy.emergencyCardSubtitle}</p>
               </div>
 
-              <EmergencyNumber
-                number="191"
-                title="แจ้งเหตุฉุกเฉิน"
-                description="ตำรวจ เหตุร้าย อัคคีภัย"
-                tone="red"
-              />
-              <EmergencyNumber
-                number="1669"
-                title="รถฉุกเฉินการแพทย์"
-                description="เจ็บป่วย บาดเจ็บ"
-                tone="blue"
-              />
-              <EmergencyNumber
-                number="1784"
-                title="ศูนย์ช่วยเหลือภัย"
-                description="น้ำท่วม แผ่นดินไหว"
-                tone="orange"
-              />
+              {copy.numbers.map(num => (
+                <EmergencyNumber
+                  key={num.number}
+                  number={num.number}
+                  title={num.title}
+                  description={num.description}
+                  tone={num.tone}
+                />
+              ))}
             </div>
           </div>
         </div>

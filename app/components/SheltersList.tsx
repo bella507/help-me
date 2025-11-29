@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   MapPin,
   Phone,
@@ -24,6 +25,7 @@ const mockShelters: Shelter[] = [
     location: 'เขตบางกอกใหญ่',
     address: '24 ถนนประยูรวงศ์ แขวงวัดท่าพระ',
     phone: '02-412-7777',
+    contact: 'เจ้าหน้าที่ประสานงาน',
     capacity: 200,
     occupied: 145,
     status: 'available',
@@ -43,6 +45,7 @@ const mockShelters: Shelter[] = [
     location: 'เขตพระนคร',
     address: '2 ถนนหมอชิต แขวงบางซื่อ',
     phone: '02-278-5555',
+    contact: 'เจ้าหน้าที่ประสานงาน',
     capacity: 150,
     occupied: 128,
     status: 'limited',
@@ -55,6 +58,7 @@ const mockShelters: Shelter[] = [
     location: 'เขตบางกอกน้อย',
     address: '333 ถนนอรุณอมรินทร์ แขวงบางขุนนนท์',
     phone: '02-424-3333',
+    contact: 'เจ้าหน้าที่ประสานงาน',
     capacity: 100,
     occupied: 100,
     status: 'full',
@@ -67,6 +71,7 @@ const mockShelters: Shelter[] = [
     location: 'เขตคลองสาน',
     address: '456 ถนนสมเด็จพระเจ้าตากสิน แขวงคลองต้นไทร',
     phone: '02-437-8888',
+    contact: 'เจ้าหน้าที่ประสานงาน',
     capacity: 250,
     occupied: 89,
     status: 'available',
@@ -88,6 +93,7 @@ const mockShelters: Shelter[] = [
     location: 'เขตภาษีเจริญ',
     address: '789 ถนนภาษีเจริญ แขวงปากคลองภาษีเจริญ',
     phone: '02-455-2222',
+    contact: 'เจ้าหน้าที่ประสานงาน',
     capacity: 120,
     occupied: 67,
     status: 'available',
@@ -108,6 +114,7 @@ const facilityIcons: Record<
 };
 
 export function SheltersList() {
+  const t = useTranslations('home.sheltersList');
   const [selectedStatus, setSelectedStatus] = useState<ShelterStatus>('all');
 
   const filteredShelters = useMemo(
@@ -165,24 +172,22 @@ export function SheltersList() {
             <Bed className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-gray-900">ศูนย์พักพิง</h2>
-            <p className="text-sm text-gray-500">
-              รายการศูนย์พักพิงที่เปิดให้บริการ
-            </p>
+            <h2 className="text-gray-900">{t('title')}</h2>
+            <p className="text-sm text-gray-500">{t('subtitle')}</p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {filterButton('all', 'ทั้งหมด', 'primary')}
-          {filterButton('available', 'ว่าง', 'green')}
-          {filterButton('limited', 'ใกล้เต็ม', 'orange')}
-          {filterButton('full', 'เต็ม', 'red')}
+          {filterButton('all', t('filters.all'), 'primary')}
+          {filterButton('available', t('filters.available'), 'green')}
+          {filterButton('limited', t('filters.limited'), 'orange')}
+          {filterButton('full', t('filters.full'), 'red')}
         </div>
       </div>
 
       <div className="space-y-4">
         {filteredShelters.length === 0 ? (
-          <EmptyState />
+          <EmptyState message={t('noData')} />
         ) : (
           filteredShelters.map(shelter => (
             <ShelterCard key={shelter.id} shelter={shelter} />
@@ -196,6 +201,7 @@ export function SheltersList() {
 }
 
 function ShelterCard({ shelter }: { shelter: Shelter }) {
+  const t = useTranslations('home.sheltersList');
   const occupancyPercent = Math.round(
     (shelter.occupied / shelter.capacity) * 100
   );
@@ -224,7 +230,7 @@ function ShelterCard({ shelter }: { shelter: Shelter }) {
       </div>
 
       <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
-        <div className="mb-1 text-xs text-gray-600">ที่อยู่</div>
+        <div className="mb-1 text-xs text-gray-600">{t('addressLabel')}</div>
         <div className="text-sm text-gray-900">{shelter.address}</div>
       </div>
 
@@ -232,10 +238,13 @@ function ShelterCard({ shelter }: { shelter: Shelter }) {
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <Users className="h-4 w-4" />
-            <span>ความจุ</span>
+            <span>{t('capacityLabel')}</span>
           </div>
           <span className="text-sm text-gray-900">
-            {shelter.occupied}/{shelter.capacity} คน
+            {t('occupancy', {
+              occupied: shelter.occupied,
+              capacity: shelter.capacity,
+            })}
           </span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-gray-100">
@@ -281,33 +290,31 @@ function ShelterCard({ shelter }: { shelter: Shelter }) {
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-white transition-colors hover:bg-[#e14a21]"
         >
           <Phone className="h-4 w-4" />
-          <span>โทร</span>
+          <span>{t('callAction')}</span>
         </a>
       </div>
     </div>
   );
 }
 
-function EmptyState() {
+function EmptyState({ message }: { message?: string }) {
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-12 text-center">
       <Bed className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-      <p className="text-gray-500">ไม่พบศูนย์พักพิง</p>
+      <p className="text-gray-500">{message}</p>
     </div>
   );
 }
 
 function EmergencyNotice() {
+  const t = useTranslations('home.sheltersList');
   return (
     <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
       <div className="flex gap-3">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="text-sm text-gray-700">
-          <p className="mb-1 text-gray-900">หมายเหตุ</p>
-          <p className="text-xs text-gray-600">
-            ข้อมูลอาจเปลี่ยนแปลงได้ กรุณาโทรสอบถามก่อนเดินทาง
-            หรือในกรณีฉุกเฉินโทร 191 หรือ 1669
-          </p>
+          <p className="mb-1 text-gray-900">{t('notice.title')}</p>
+          <p className="text-xs text-gray-600">{t('notice.body')}</p>
         </div>
       </div>
     </div>

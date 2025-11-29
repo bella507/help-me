@@ -4,11 +4,13 @@ import { cn } from '@/app/lib/utils';
 
 type EmergencyFooterProps = {
   emergencyLabel: string;
+  loginLabel: string;
+  orLabel: string;
   onLogin: () => void;
   actions?: ReactNode;
 };
 
-export function EmergencyFooter({ emergencyLabel, onLogin, actions }: EmergencyFooterProps) {
+export function EmergencyFooter({ emergencyLabel, loginLabel, orLabel, onLogin, actions }: EmergencyFooterProps) {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-[#e14a21] bg-primary">
       <div className="mx-auto max-w-7xl px-4 py-2 sm:px-6 sm:py-3">
@@ -22,7 +24,7 @@ export function EmergencyFooter({ emergencyLabel, onLogin, actions }: EmergencyF
             >
               191
             </a>
-            <span className="text-xs text-white/80 sm:text-sm">หรือ</span>
+            <span className="text-xs text-white/80 sm:text-sm">{orLabel}</span>
             <a
               href="tel:1669"
               className="rounded bg-white/20 px-2.5 py-0.5 text-xs transition-colors hover:bg-white/30 sm:px-3 sm:py-1 sm:text-sm"
@@ -39,7 +41,7 @@ export function EmergencyFooter({ emergencyLabel, onLogin, actions }: EmergencyF
               )}
             >
               <Shield className="h-3.5 w-3.5 text-white" />
-              เข้าสู่ระบบ
+              {loginLabel}
             </button>
           </div>
         </div>

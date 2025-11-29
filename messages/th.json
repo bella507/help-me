@@ -1,0 +1,584 @@
+{
+  "home": {
+    "title": "ศูนย์ช่วยเหลือผู้ประสบภัย",
+    "subtitle": "พร้อมดูแลคุณตลอด 24 ชม.",
+    "request": "ขอความช่วยเหลือ",
+    "news": "ข่าวสาร",
+    "status": "ติดตามสถานะ",
+    "shelters": "ที่พักพิง",
+    "map": "แผนที่",
+    "menu": "เมนูเพิ่มเติม",
+    "emergency": "กรณีฉุกเฉิน โทร",
+    "sos": "SOS ฉุกเฉิน",
+    "login": "เข้าสู่ระบบ",
+    "hero": {
+      "badge": "พร้อมให้บริการตลอด 24 ชั่วโมง",
+      "titleLine1": "ศูนย์ช่วยเหลือ",
+      "titleLine2": "ผู้ประสบภัย",
+      "description": "พร้อมดูแลคุณทุกขณะ ไม่ว่าจะเกิดอะไรขึ้น",
+      "stats": {
+        "openValue": "24/7",
+        "openLabel": "เปิดบริการ",
+        "freeValue": "ฟรี",
+        "freeLabel": "ไม่มีค่าใช้จ่าย",
+        "responseValue": "<5",
+        "responseLabel": "นาที ตอบรับ"
+      },
+      "requestCta": "ขอความช่วยเหลือเลย",
+      "callButton": "โทร 191 ฉุกเฉิน",
+      "callNumber": "191",
+      "trust": {
+        "safe": "ปลอดภัย",
+        "reliable": "เชื่อถือได้",
+        "helped": "ช่วยเหลือแล้ว 1,000+ คน"
+      },
+      "emergencyCardTitle": "หมายเลขฉุกเฉิน",
+      "emergencyCardSubtitle": "โทรออกได้ทันทีตลอด 24 ชั่วโมง",
+      "numbers": [
+        {
+          "number": "191",
+          "title": "แจ้งเหตุฉุกเฉิน",
+          "description": "ตำรวจ เหตุร้าย อัคคีภัย",
+          "tone": "red"
+        },
+        {
+          "number": "1669",
+          "title": "รถฉุกเฉินการแพทย์",
+          "description": "เจ็บป่วย บาดเจ็บ",
+          "tone": "blue"
+        },
+        {
+          "number": "1784",
+          "title": "ศูนย์ช่วยเหลือภัย",
+          "description": "น้ำท่วม แผ่นดินไหว",
+          "tone": "orange"
+        }
+      ]
+    },
+    "sosCopy": {
+      "modalTitle": "SOS ฉุกเฉิน",
+      "modalSubtitle": "โทรออกทันทีในสถานการณ์อันตราย",
+      "callPoliceTitle": "โทร 191",
+      "callPoliceDesc": "ศูนย์รับแจ้งเหตุฉุกเฉิน",
+      "callMedicalTitle": "โทร 1669",
+      "callMedicalDesc": "รถฉุกเฉินการแพทย์",
+      "shareLabel": "แชร์ตำแหน่งฉุกเฉิน",
+      "shareTitle": "ต้องการความช่วยเหลือฉุกเฉิน!",
+      "shareText": "ฉันอยู่ในสถานการณ์ฉุกเฉิน กรุณาช่วยเหลือ!",
+      "closeLabel": "ปิด"
+    },
+    "menuItems": {
+      "emergency": {
+        "label": "หมายเลขฉุกเฉิน",
+        "description": "หมายเลขติดต่อสำคัญ"
+      },
+      "guide": {
+        "label": "คู่มือเตรียมพร้อม",
+        "description": "แนวทางรับมือภัย"
+      },
+      "volunteer": {
+        "label": "อาสาสมัคร",
+        "description": "ลงทะเบียนช่วยเหลือ"
+      },
+      "donations": {
+        "label": "ของบริจาค",
+        "description": "สิ่งของที่ต้องการ"
+      },
+      "risk": {
+        "label": "พื้นที่เสี่ยง",
+        "description": "ข้อมูลพื้นที่เสี่ยงภัย"
+      },
+      "faq": {
+        "label": "คำถามที่พบบ่อย",
+        "description": "FAQ และคำตอบ"
+      },
+      "myRequests": {
+        "label": "คำขอของฉัน",
+        "description": "คำขอที่คุณส่ง"
+      },
+      "weather": {
+        "label": "สภาพอากาศ",
+        "description": "ตรวจสอบสภาพอากาศ"
+      },
+      "dashboard": {
+        "label": "แดชบอร์ด",
+        "description": "ภาพรวมสถานการณ์"
+      }
+    },
+    "common": {
+      "status": {
+        "all": "ทั้งหมด",
+        "pending": "รอดำเนินการ",
+        "in-progress": "กำลังดำเนินการ",
+        "completed": "เสร็จสิ้น"
+      },
+      "urgency": {
+        "high": "เร่งด่วน",
+        "medium": "ปานกลาง",
+        "low": "ไม่เร่งด่วน"
+      },
+      "categories": {
+        "food": "อาหารและน้ำดื่ม",
+        "food-water": "อาหาร-น้ำดื่ม",
+        "shelter": "ที่พักพิง",
+        "medical": "การแพทย์",
+        "clothing": "เสื้อผ้า",
+        "evacuation": "การอพยพ",
+        "transportation": "ยานพาหนะ",
+        "rescue": "ช่วยเหลือฉุกเฉิน",
+        "other": "อื่นๆ"
+      },
+      "or": "หรือ"
+    },
+    "requestForm": {
+      "stepLabel": "ขั้นตอนที่ {step} จาก {total}",
+      "sections": {
+        "profile": {
+          "title": "ข้อมูลผู้ขอความช่วยเหลือ",
+          "subtitle": "ชื่อและเบอร์ติดต่อของคุณ"
+        },
+        "location": {
+          "title": "ที่อยู่ของคุณ",
+          "subtitle": "เพื่อให้เราไปช่วยเหลือคุณได้"
+        },
+        "needs": {
+          "title": "ต้องการความช่วยเหลืออะไร",
+          "subtitle": "เลือกได้ 1 อย่าง"
+        },
+        "risk": {
+          "title": "กลุ่มเสี่ยงพิเศษ",
+          "subtitle": "เลือกได้หลายอย่าง (ถ้ามี)"
+        },
+        "review": {
+          "title": "ตรวจสอบข้อมูลก่อนส่ง",
+          "subtitle": "กรุณาตรวจสอบความถูกต้อง"
+        }
+      },
+      "fields": {
+        "name": "ชื่อ-นามสกุล",
+        "namePlaceholder": "กรอกชื่อ-นามสกุล",
+        "phone": "เบอร์โทรศัพท์",
+        "phonePlaceholder": "0xx-xxx-xxxx",
+        "location": "จังหวัด/อำเภอ",
+        "locationPlaceholder": "เช่น กรุงเทพมหานคร, เขตบางกอกน้อย",
+        "address": "ที่อยู่โดยละเอียด (ถ้ามี)",
+        "addressPlaceholder": "บ้านเลขที่ ถนน ตำบล",
+        "description": "อธิบายสถานการณ์ (ถ้ามี)",
+        "descriptionPlaceholder": "เช่น บ้านท่วมน้ำสูง 1 เมตร ต้องการอาหารและน้ำดื่ม",
+        "specialNeeds": "เพิ่มความต้องการพิเศษ (ถ้ามี)",
+        "specialNeedsPlaceholder": "เช่น ไม่สามารถขึ้นบันไดได้, ต้องการอาหารอ่อน, แพ้อาหารทะเล"
+      },
+      "categories": {
+        "food": "อาหาร/น้ำ",
+        "shelter": "ที่พักพิง",
+        "medical": "พยาบาล",
+        "clothing": "เสื้อผ้า",
+        "evacuation": "อพยพ",
+        "other": "อื่นๆ"
+      },
+      "urgency": {
+        "label": "ระดับความเร่งด่วน",
+        "low": "ไม่เร่งด่วน",
+        "medium": "ปานกลาง",
+        "high": "เร่งด่วน"
+      },
+      "risk": {
+        "labels": {
+          "elderly": "ผู้สูงอายุ (60 ปีขึ้นไป)",
+          "children": "เด็กเล็ก (ต่ำกว่า 5 ปี)",
+          "disabled": "ผู้พิการ/ผู้ป่วยติดเตียง",
+          "pregnant": "หญิงมีครรภ์",
+          "pets": "สัตว์เลี้ยง",
+          "medical": "ต้องการยาหรืออุปกรณ์ทางการแพทย์"
+        },
+        "placeholders": {
+          "elderly": "เช่น 2 คน, เคลื่อนไหวได้บ้าง, มีโรคเบาหวาน",
+          "children": "เช่น 1 คน, อายุ 3 ขวบ",
+          "disabled": "เช่น 1 คน, ใช้รถเข็น, ต้องการอุปกรณ์ช่วยเหลือ",
+          "pregnant": "เช่น ตั้งครรภ์ 7 เดือน",
+          "pets": "เช่น สุนัข 2 ตัว (ขนาดใหญ่) แมว 1 ตัว",
+          "medical": "เช่น ยาความดันโลหิตสูง, เครื่องวัดน้ำตาล, ออกซิเจน"
+        },
+        "emptyHint": "หากไม่มีกลุ่มเสี่ยงพิเศษ กดถัดไปได้เลย"
+      },
+      "review": {
+        "profile": "ข้อมูลผู้ขอความช่วยเหลือ",
+        "address": "ที่อยู่",
+        "needs": "ความช่วยเหลือที่ต้องการ",
+        "risks": "กลุ่มเสี่ยงพิเศษ",
+        "specialNeeds": "ความต้องการพิเศษ",
+        "alertTitle": "ก่อนส่งคำขอ กรุณาตรวจสอบข้อมูล",
+        "alertSubtitle": "เราจะติดต่อกลับโดยเร็วที่สุด กรณีเร่งด่วนกรุณาโทร 191 หรือ 1669"
+      },
+      "buttons": {
+        "back": "ย้อนกลับ",
+        "next": "ถัดไป",
+        "submit": "ส่งคำขอความช่วยเหลือ"
+      },
+      "toastSuccess": "ส่งคำขอความช่วยเหลือเรียบร้อยแล้ว"
+    },
+    "requests": {
+      "heading": "ติดตามสถานะคำขอ",
+      "subheading": "ค้นหาด้วยเบอร์โทรศัพท์",
+      "searchPlaceholder": "0xx-xxx-xxxx",
+      "showing": "แสดง {count} รายการ",
+      "filteredHint": "(กรองตามสถานะ)",
+      "urgencyToggle": "เรียงด่วนก่อน",
+      "ratingButton": "ให้คะแนนความพึงพอใจ",
+      "specialGroupTitle": "กลุ่มเสี่ยงพิเศษ",
+      "noteTitle": "หมายเหตุ",
+      "progressTitle": "ความคืบหน้า",
+      "noSpecialGroupHint": "หากไม่มีกลุ่มเสี่ยงพิเศษ กดถัดไปได้เลย",
+      "riskCounts": {
+        "elderly": "ผู้สูงอายุ {count} คน",
+        "children": "เด็ก {count} คน",
+        "disabled": "ผู้พิการ",
+        "pregnant": "หญิงมีครรภ์ {count} คน",
+        "pets": "สัตว์เลี้ยง {count} ตัว",
+        "medical": "ต้องการยา/อุปกรณ์ทางการแพทย์"
+      },
+      "toggle": {
+        "show": "ดูรายละเอียด",
+        "hide": "ซ่อนรายละเอียด"
+      },
+      "empty": {
+        "defaultTitle": "ยังไม่มีคำขอความช่วยเหลือ",
+        "defaultSubtitle": "กรอกเบอร์โทรศัพท์เพื่อค้นหา",
+        "statusTitle": "ไม่มีคำขอในสถานะนี้",
+        "statusSubtitle": "ลองเลือกดูสถานะอื่น",
+        "phoneTitle": "ไม่พบคำขอที่ตรงกับเบอร์โทรศัพท์",
+        "phoneSubtitle": "ลองค้นหาด้วยเบอร์อื่น"
+      }
+    },
+    "dashboard": {
+      "title": "แดชบอร์ดภาพรวม",
+      "subtitle": "สถิติและข้อมูลสรุป",
+      "cards": {
+        "total": "คำขอทั้งหมด",
+        "pending": "รอดำเนินการ",
+        "completed": "สำเร็จแล้ว",
+        "urgent": "เร่งด่วน",
+        "volunteers": "อาสาสมัคร",
+        "shelters": "ศูนย์พักพิง",
+        "unit": "รายการ",
+        "people": "คน",
+        "places": "แห่ง"
+      },
+      "sections": {
+        "status": "สถานะคำขอ",
+        "categories": "ประเภทความช่วยเหลือ",
+        "topAreas": "พื้นที่ที่ต้องการความช่วยเหลือมากสุด"
+      },
+      "info": {
+        "title": "ข้อมูลอัพเดทแบบเรียลไทม์",
+        "subtitle": "ข้อมูลอัพเดทอัตโนมัติทุก 5 วินาที จากระบบ"
+      }
+    },
+    "myRequests": {
+      "title": "คำขอของฉัน",
+      "subtitle": "ตรวจสอบคำขอความช่วยเหลือของคุณ",
+      "enterPhone": "กรุณากรอกเบอร์โทรศัพท์เพื่อดูคำขอของคุณ",
+      "phonePlaceholder": "0XX-XXX-XXXX",
+      "viewButton": "ดูคำขอของฉัน",
+      "changeNumber": "เปลี่ยนเบอร์",
+      "total": "{count} คำขอทั้งหมด",
+      "emptyTitle": "ยังไม่มีคำขอความช่วยเหลือ",
+      "emptySubtitle": "คำขอที่คุณส่งจะแสดงที่นี่",
+      "actions": {
+        "call": "โทร",
+        "share": "แชร์",
+        "delete": "ยกเลิก"
+      },
+      "confirmDelete": "ต้องการยกเลิกคำขอนี้หรือไม่?",
+      "shareTitle": "คำขอความช่วยเหลือ",
+      "shareTemplate": "ขอความช่วยเหลือ: {category}\nสถานที่: {location}\nติดต่อ: {phone}",
+      "copyAlert": "คัดลอกข้อมูลแล้ว"
+    },
+    "emergencyContacts": {
+      "heading": "เบอร์ฉุกเฉิน",
+      "subheading": "แตะเพื่อโทรออกทันที หรือดูช่องทางอื่น",
+      "extraNumbers": "เบอร์เพิ่มเติม",
+      "otherChannels": "ช่องทางอื่น",
+      "contacts": {
+        "police": {
+          "name": "ตำรวจ",
+          "description": "อาชญากรรม เหตุร้าย อุบัติเหตุ",
+          "numbers": {
+            "primary": "สายฉุกเฉิน",
+            "tourist": "สายด่วนตำรวจท่องเที่ยว",
+            "complaint": "ศูนย์รับเรื่องร้องเรียน"
+          },
+          "channels": {
+            "line": "LINE ตำรวจ",
+            "website": "เว็บไซต์"
+          }
+        },
+        "medical": {
+          "name": "กู้ชีพ กู้ภัย",
+          "description": "เจ็บป่วย บาดเจ็บ ปฐมพยาบาล",
+          "numbers": {
+            "primary": "รถพยาบาลฉุกเฉิน",
+            "hospital": "ศูนย์ประสานงานโรงพยาบาล",
+            "health": "สายด่วนสาธารณสุข"
+          },
+          "channels": {
+            "website": "ศูนย์รับแจ้งเหตุ"
+          }
+        },
+        "fire": {
+          "name": "ดับเพลิง",
+          "description": "ไฟไหม้ อัคคีภัย ภัยพิบัติ",
+          "numbers": {
+            "primary": "สายฉุกเฉิน",
+            "bma": "กรุงเทพมหานคร",
+            "disaster": "ศูนย์ป้องกันภัย"
+          },
+          "channels": {
+            "line": "LINE ดับเพลิง"
+          }
+        },
+        "disaster": {
+          "name": "ศูนย์ช่วยเหลือภัย",
+          "description": "น้ำท่วม แผ่นดินไหว ภัยธรรมชาติ",
+          "numbers": {
+            "primary": "ศูนย์ประสานงาน",
+            "office": "สำนักงานป้องกันฯ"
+          },
+          "channels": {
+            "line": "LINE ศูนย์ภัย",
+            "website": "เว็บไซต์",
+            "email": "อีเมล"
+          }
+        },
+        "health": {
+          "name": "สายด่วนสาธารณสุข",
+          "description": "ปรึกษาสุขภาพ โรคติดต่อ",
+          "numbers": {
+            "primary": "สายด่วนสาธารณสุข",
+            "disease": "โรคติดต่ออุบัติใหม่"
+          }
+        },
+        "electricity": {
+          "name": "การไฟฟ้า",
+          "description": "ไฟฟ้าขัดข้อง ไฟดับ ไฟตก",
+          "numbers": {
+            "primary": "กฟน. กรุงเทพฯ",
+            "provincial": "กฟผ. ต่างจังหวัด"
+          },
+          "channels": {
+            "line": "LINE กฟน.",
+            "website": "เว็บไซต์"
+          }
+        },
+        "water": {
+          "name": "การประปา",
+          "description": "น้ำประปาขัดข้อง ท่อแตก",
+          "numbers": {
+            "primary": "กปน. กรุงเทพฯ",
+            "provincial": "กปภ. ต่างจังหวัด"
+          },
+          "channels": {
+            "line": "LINE กปน."
+          }
+        }
+      }
+    },
+    "sheltersList": {
+      "title": "ศูนย์พักพิง",
+      "subtitle": "รายการศูนย์พักพิงที่เปิดให้บริการ",
+      "filters": {
+        "all": "ทั้งหมด",
+        "available": "ว่าง",
+        "limited": "ใกล้เต็ม",
+        "full": "เต็ม"
+      },
+      "occupancy": "{occupied}/{capacity} คน",
+      "addressLabel": "ที่อยู่",
+      "capacityLabel": "ความจุ",
+      "callAction": "โทร",
+      "noData": "ยังไม่มีศูนย์พักพิง",
+      "notice": {
+        "title": "หมายเหตุ",
+        "body": "ข้อมูลอาจเปลี่ยนแปลงได้ กรุณาโทรสอบถามก่อนเดินทาง หรือในกรณีฉุกเฉินโทร 191 หรือ 1669"
+      }
+    },
+    "donationsList": {
+      "title": "รายการของบริจาค",
+      "subtitle": "สิ่งของที่ต้องการและจุดรับบริจาค",
+      "filters": {
+        "all": "ทั้งหมด",
+        "urgent": "ขาดมาก",
+        "needed": "ต้องการ",
+        "sufficient": "เพียงพอ"
+      },
+      "status": {
+        "urgent": "ขาดมาก",
+        "needed": "ต้องการ",
+        "sufficient": "เพียงพอ"
+      },
+      "guidelines": {
+        "title": "แนวทางการบริจาค",
+        "items": [
+          "บริจาคเฉพาะของที่อยู่ในสภาพดี สะอาด ใช้งานได้",
+          "อาหารและยาต้องไม่หมดอายุ ระบุวันหมดอายุชัดเจน",
+          "เสื้อผ้าควรซักสะอาดก่อนบริจาค",
+          "ติดต่อศูนย์รับบริจาคก่อนหากมีของจำนวนมาก"
+        ]
+      },
+      "dropoff": "จุดรับบริจาค",
+      "call": "โทร {phone}"
+    },
+    "volunteerDashboard": {
+      "title": "ระบบอาสาสมัคร",
+      "subtitle": "Volunteer Dashboard",
+      "stats": {
+        "myTasks": "งานของฉัน",
+        "available": "งานใหม่"
+      },
+      "tabs": {
+        "myTasks": "งานของฉัน",
+        "available": "งานที่รับได้",
+        "myTasksWithCount": "งานของฉัน ({count})",
+        "availableWithCount": "งานที่รับได้ ({count})"
+      },
+      "counts": {
+        "myTasks": "{count} งานที่ต้องติดตาม",
+        "available": "{count} งานที่รับได้"
+      },
+      "actions": {
+        "logout": "ออกจากระบบ",
+        "navigate": "นำทาง",
+        "addNotes": "เพิ่มหมายเหตุ",
+        "complete": "ทำเสร็จแล้ว",
+        "accept": "รับงานนี้",
+        "viewMap": "ดูแผนที่",
+        "call": "โทร",
+        "save": "บันทึก",
+        "cancel": "ยกเลิก"
+      },
+      "fields": {
+        "location": "สถานที่",
+        "phone": "โทร",
+        "description": "รายละเอียด"
+      },
+      "notes": {
+        "admin": "หมายเหตุจากแอดมิน",
+        "mine": "หมายเหตุของฉัน",
+        "placeholder": "บันทึกความคืบหน้าหรือหมายเหตุ..."
+      },
+      "empty": {
+        "myTasks": "คุณยังไม่มีงานที่ต้องทำ",
+        "viewAvailable": "ดูงานที่รับได้",
+        "available": "ไม่มีงานใหม่ในขณะนี้"
+      },
+      "toast": {
+        "accepted": "รับงานสำเร็จ!",
+        "completed": "ทำงานเสร็จสิ้น! ขอบคุณสำหรับการช่วยเหลือ",
+        "notesSaved": "บันทึกหมายเหตุสำเร็จ"
+      }
+    },
+    "volunteerForm": {
+      "title": "ลงทะเบียนอาสาสมัคร",
+      "subtitle": "ร่วมเป็นส่วนหนึ่งในการช่วยเหลือผู้ประสบภัย",
+      "toastSuccess": "ลงทะเบียนสำเร็จ",
+      "success": {
+        "title": "ลงทะเบียนสำเร็จ",
+        "subtitle": "ขอบคุณที่ร่วมเป็นอาสาสมัคร เราจะติดต่อกลับเมื่อมีกิจกรรมที่เหมาะสม",
+        "again": "ลงทะเบียนอีกครั้ง",
+        "nextTitle": "ขั้นตอนต่อไป",
+        "nextSubtitle": "เราจะติดต่อกลับภายใน 3-5 วันทำการ เพื่อยืนยันการเป็นอาสาสมัครและให้ข้อมูลการปฐมนิเทศ"
+      },
+      "fields": {
+        "name": "ชื่อ-นามสกุล",
+        "namePlaceholder": "กรอกชื่อ-นามสกุล",
+        "phone": "เบอร์โทรศัพท์",
+        "phonePlaceholder": "0xx-xxx-xxxx",
+        "email": "อีเมล",
+        "emailPlaceholder": "example@email.com",
+        "age": "อายุ",
+        "agePlaceholder": "เช่น 30",
+        "area": "พื้นที่ที่สะดวก",
+        "areaPlaceholder": "เลือกพื้นที่",
+        "availability": "ช่วงเวลาที่สะดวก",
+        "skills": "ทักษะที่มี",
+        "experience": "ประสบการณ์",
+        "experiencePlaceholder": "เช่น เคยช่วยงานอาสา/กู้ภัยที่ไหน ประสบการณ์ด้านใด",
+        "transport": "พาหนะ/อุปกรณ์ที่มี",
+        "emergencyContact": "ชื่อผู้ติดต่อกรณีฉุกเฉิน",
+        "emergencyContactPlaceholder": "ชื่อ-นามสกุล",
+        "emergencyPhone": "เบอร์ติดต่อฉุกเฉิน",
+        "emergencyPhonePlaceholder": "0xx-xxx-xxxx"
+      },
+      "availability": {
+        "weekday-morning": "วันธรรมดา เช้า",
+        "weekday-afternoon": "วันธรรมดา บ่าย",
+        "weekday-evening": "วันธรรมดา เย็น",
+        "weekend-morning": "วันหยุด เช้า",
+        "weekend-afternoon": "วันหยุด บ่าย",
+        "weekend-evening": "วันหยุด เย็น",
+        "emergency": "ตลอดเวลา (กรณีฉุกเฉิน)"
+      },
+      "skills": {
+        "first-aid": "ปฐมพยาบาล",
+        "cooking": "ทำอาหาร",
+        "driving": "ขับรถ",
+        "boating": "ขับเรือ",
+        "drone": "บังคับโดรน",
+        "construction": "ช่างซ่อมบำรุง",
+        "counseling": "ให้คำปรึกษา",
+        "teaching": "สอน/ดูแลเด็ก",
+        "translation": "แปลภาษา",
+        "it": "คอมพิวเตอร์/IT",
+        "photography": "ถ่ายภาพ/บันทึกข้อมูล",
+        "swimming": "ว่ายน้ำ/ช่วยชีวิตทางน้ำ",
+        "general": "งานทั่วไป"
+      },
+      "transportGroups": {
+        "land": "ทางบก",
+        "water": "ทางน้ำ",
+        "air": "ทางอากาศ"
+      },
+      "transport": {
+        "car": "รถยนต์",
+        "suv": "รถ SUV/กระบะ",
+        "motorcycle": "มอเตอร์ไซค์",
+        "truck": "รถบรรทุก",
+        "van": "รถตู้",
+        "bicycle": "จักรยาน",
+        "boat": "เรือยนต์",
+        "speedboat": "เรือเร็ว",
+        "longtail": "เรือหางยาว",
+        "raft": "แพ/เรือพยาบาล",
+        "jet-ski": "เจ็ทสกี",
+        "drone": "โดรน (ขนาดเล็ก)",
+        "large-drone": "โดรนขนาดใหญ่",
+        "helicopter": "เฮลิคอปเตอร์",
+        "ultralight": "เครื่องบินเล็ก"
+      },
+      "buttons": {
+        "back": "ย้อนกลับ",
+        "next": "ถัดไป",
+        "submit": "ส่งข้อมูลอาสาสมัคร"
+      }
+    },
+    "admin": {
+      "title": "ระบบจัดการผู้ดูแล",
+      "subtitle": "Admin Dashboard",
+      "tabs": {
+        "overview": "ภาพรวม",
+        "requests": "คำขอช่วยเหลือ",
+        "volunteers": "อาสาสมัคร",
+        "news": "ข่าวสาร",
+        "shelters": "ศูนย์พักพิง",
+        "risks": "พื้นที่เสี่ยง",
+        "donations": "ของบริจาค",
+        "faq": "FAQ",
+        "notifications": "แจ้งเตือน",
+        "settings": "ตั้งค่า"
+      },
+      "actions": {
+        "logout": "ออกจากระบบ"
+      }
+    }
+  }
+}

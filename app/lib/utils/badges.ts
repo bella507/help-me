@@ -21,7 +21,7 @@ export function getStatusBadge(status: string): BadgeConfig {
     case REQUEST_STATUS.COMPLETED:
       return {
         icon: 'CheckCircle',
-        text: 'เสร็จสิ้น',
+        text: 'completed',
         bgClass: 'bg-green-100',
         textClass: 'text-green-700',
         borderClass: 'border-green-200',
@@ -29,7 +29,7 @@ export function getStatusBadge(status: string): BadgeConfig {
     case REQUEST_STATUS.IN_PROGRESS:
       return {
         icon: 'Clock',
-        text: 'กำลังดำเนินการ',
+        text: 'in-progress',
         bgClass: 'bg-blue-100',
         textClass: 'text-blue-700',
         borderClass: 'border-blue-200',
@@ -38,7 +38,7 @@ export function getStatusBadge(status: string): BadgeConfig {
     default:
       return {
         icon: 'AlertCircle',
-        text: 'รอดำเนินการ',
+        text: 'pending',
         bgClass: 'bg-orange-100',
         textClass: 'text-orange-700',
         borderClass: 'border-orange-200',
@@ -66,14 +66,14 @@ export function getUrgencyBadge(urgency: string): BadgeConfig {
   switch (urgency) {
     case URGENCY_LEVELS.HIGH:
       return {
-        text: 'ด่วนมาก',
+        text: 'high',
         bgClass: 'bg-red-100',
         textClass: 'text-red-700',
         borderClass: 'border-red-200',
       };
     case URGENCY_LEVELS.MEDIUM:
       return {
-        text: 'ปานกลาง',
+        text: 'medium',
         bgClass: 'bg-yellow-100',
         textClass: 'text-yellow-700',
         borderClass: 'border-yellow-200',
@@ -81,7 +81,7 @@ export function getUrgencyBadge(urgency: string): BadgeConfig {
     case URGENCY_LEVELS.LOW:
     default:
       return {
-        text: 'ไม่ด่วน',
+        text: 'low',
         bgClass: 'bg-gray-100',
         textClass: 'text-gray-700',
         borderClass: 'border-gray-200',
@@ -109,21 +109,21 @@ export function getRiskBadge(level: string): BadgeConfig {
   switch (level) {
     case RISK_LEVELS.CRITICAL:
       return {
-        text: 'วิกฤต',
+        text: 'critical',
         bgClass: 'bg-red-100',
         textClass: 'text-red-700',
         borderClass: 'border-red-200',
       };
     case RISK_LEVELS.HIGH:
       return {
-        text: 'สูง',
+        text: 'high',
         bgClass: 'bg-orange-100',
         textClass: 'text-orange-700',
         borderClass: 'border-orange-200',
       };
     case RISK_LEVELS.MEDIUM:
       return {
-        text: 'ปานกลาง',
+        text: 'medium',
         bgClass: 'bg-yellow-100',
         textClass: 'text-yellow-700',
         borderClass: 'border-yellow-200',
@@ -131,7 +131,7 @@ export function getRiskBadge(level: string): BadgeConfig {
     case RISK_LEVELS.LOW:
     default:
       return {
-        text: 'ต่ำ',
+        text: 'low',
         bgClass: 'bg-green-100',
         textClass: 'text-green-700',
         borderClass: 'border-green-200',
@@ -161,21 +161,21 @@ export function getShelterStatusBadge(status: string): BadgeConfig {
     case 'open':
     case 'available':
       return {
-        text: 'เปิดให้บริการ',
+        text: 'open',
         bgClass: 'bg-green-100',
         textClass: 'text-green-700',
         borderClass: 'border-green-200',
       };
     case 'limited':
       return {
-        text: 'เหลือที่จำกัด',
+        text: 'limited',
         bgClass: 'bg-yellow-100',
         textClass: 'text-yellow-700',
         borderClass: 'border-yellow-200',
       };
     case 'full':
       return {
-        text: 'เต็ม',
+        text: 'full',
         bgClass: 'bg-orange-100',
         textClass: 'text-orange-700',
         borderClass: 'border-orange-200',
@@ -183,7 +183,7 @@ export function getShelterStatusBadge(status: string): BadgeConfig {
     case 'closed':
     default:
       return {
-        text: 'ปิดให้บริการ',
+        text: 'closed',
         bgClass: 'bg-gray-100',
         textClass: 'text-gray-700',
         borderClass: 'border-gray-200',
@@ -197,23 +197,23 @@ export function getShelterStatusBadge(status: string): BadgeConfig {
 
 export function getDonationStatusBadge(status: string): BadgeConfig {
   switch (status) {
-    case 'needed':
+    case 'urgent':
       return {
-        text: 'ต้องการ',
+        text: 'urgent',
         bgClass: 'bg-red-100',
         textClass: 'text-red-700',
         borderClass: 'border-red-200',
       };
-    case 'partial':
+    case 'needed':
       return {
-        text: 'ได้รับบางส่วน',
-        bgClass: 'bg-yellow-100',
-        textClass: 'text-yellow-700',
-        borderClass: 'border-yellow-200',
+        text: 'needed',
+        bgClass: 'bg-orange-100',
+        textClass: 'text-orange-700',
+        borderClass: 'border-orange-200',
       };
-    case 'fulfilled':
+    case 'sufficient':
       return {
-        text: 'ครบแล้ว',
+        text: 'sufficient',
         bgClass: 'bg-green-100',
         textClass: 'text-green-700',
         borderClass: 'border-green-200',

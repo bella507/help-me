@@ -2,29 +2,33 @@
 // Date Formatters
 // ========================================
 
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string, locale: string = 'th'): string {
   const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  const diffHours = Math.floor(diffMs / 3600000);
-  const diffDays = Math.floor(diffMs / 86400000);
+  const now = Date.now();
+  const diffMs = now - date.getTime();
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const week = 7 * day;
 
-  if (diffMins < 1) return 'เมื่อสักครู่';
-  if (diffMins < 60) return `${diffMins} นาทีที่แล้ว`;
-  if (diffHours < 24) return `${diffHours} ชั่วโมงที่แล้ว`;
-  if (diffDays < 7) return `${diffDays} วันที่แล้ว`;
+  const rtf = new Intl.RelativeTimeFormat(locale === 'th' ? 'th' : 'en', {
+    numeric: 'auto',
+  });
 
-  return date.toLocaleDateString('th-TH', {
+  if (diffMs < hour) return rtf.format(-Math.round(diffMs / minute), 'minute');
+  if (diffMs < day) return rtf.format(-Math.round(diffMs / hour), 'hour');
+  if (diffMs < week) return rtf.format(-Math.round(diffMs / day), 'day');
+
+  return new Intl.DateTimeFormat(locale === 'th' ? 'th-TH' : 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
-  });
+  }).format(date);
 }
 
-export function formatFullDate(dateString: string): string {
+export function formatFullDate(dateString: string, locale: string = 'th'): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('th-TH', {
+  return date.toLocaleDateString(locale === 'th' ? 'th-TH' : 'en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
@@ -33,9 +37,9 @@ export function formatFullDate(dateString: string): string {
   });
 }
 
-export function formatTime(dateString: string): string {
+export function formatTime(dateString: string, locale: string = 'th'): string {
   const date = new Date(dateString);
-  return date.toLocaleTimeString('th-TH', {
+  return date.toLocaleTimeString(locale === 'th' ? 'th-TH' : 'en-US', {
     hour: '2-digit',
     minute: '2-digit',
   });

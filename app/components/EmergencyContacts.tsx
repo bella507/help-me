@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Phone,
   Ambulance,
@@ -26,114 +27,119 @@ type Contact = {
   color: string;
 };
 
-const emergencyContacts: Contact[] = [
-  {
-    name: 'ตำรวจ',
-    numbers: [
-      { number: '191', label: 'สายฉุกเฉิน', isPrimary: true },
-      { number: '1599', label: 'สายด่วนตำรวจท่องเที่ยว' },
-      { number: '1137', label: 'ศูนย์รับเรื่องร้องเรียน' },
-    ],
-    channels: [
-      { type: 'line', value: '@191police', label: 'LINE ตำรวจ' },
-      {
-        type: 'website',
-        value: 'https://www.royalthaipolice.go.th',
-        label: 'เว็บไซต์',
-      },
-    ],
-    description: 'อาชญากรรม เหตุร้าย อุบัติเหตุ',
-    icon: Shield,
-    color: 'bg-gray-700',
-  },
-  {
-    name: 'กู้ชีพ กู้ภัย',
-    numbers: [
-      { number: '1669', label: 'รถพยาบาลฉุกเฉิน', isPrimary: true },
-      { number: '1646', label: 'ศูนย์ประสานงานโรงพยาบาล' },
-      { number: '1554', label: 'สายด่วนสาธารณสุข' },
-    ],
-    channels: [
-      {
-        type: 'website',
-        value: 'https://niems.go.th',
-        label: 'ศูนย์รับแจ้งเหตุ',
-      },
-    ],
-    description: 'เจ็บป่วย บาดเจ็บ ปฐมพยาบาล',
-    icon: Ambulance,
-    color: 'bg-primary',
-  },
-  {
-    name: 'ดับเพลิง',
-    numbers: [
-      { number: '199', label: 'สายฉุกเฉิน', isPrimary: true },
-      { number: '02-246-0199', label: 'กรุงเทพมหานคร' },
-      { number: '1784', label: 'ศูนย์ป้องกันภัย' },
-    ],
-    channels: [{ type: 'line', value: '@199fire', label: 'LINE ดับเพลิง' }],
-    description: 'ไฟไหม้ อัคคีภัย ภัยพิบัติ',
-    icon: Flame,
-    color: 'bg-primary',
-  },
-  {
-    name: 'ศูนย์ช่วยเหลือภัย',
-    numbers: [
-      { number: '1784', label: 'ศูนย์ประสานงาน', isPrimary: true },
-      { number: '02-141-9611', label: 'สำนักงานป้องกันฯ' },
-    ],
-    channels: [
-      { type: 'line', value: '@disaster1784', label: 'LINE ศูนย์ภัย' },
-      {
-        type: 'website',
-        value: 'https://www.disaster.go.th',
-        label: 'เว็บไซต์',
-      },
-      { type: 'email', value: 'disaster@disaster.go.th', label: 'อีเมล' },
-    ],
-    description: 'น้ำท่วม แผ่นดินไหว ภัยธรรมชาติ',
-    icon: AlertTriangle,
-    color: 'bg-primary',
-  },
-  {
-    name: 'สายด่วนสาธารณสุข',
-    numbers: [
-      { number: '1422', label: 'สายด่วนสาธารณสุข', isPrimary: true },
-      { number: '1330', label: 'โรคติดต่ออุบัติใหม่' },
-    ],
-    description: 'ปรึกษาสุขภาพ โรคติดต่อ',
-    icon: Heart,
-    color: 'bg-gray-700',
-  },
-  {
-    name: 'การไฟฟ้า',
-    numbers: [
-      { number: '1130', label: 'กฟน. กรุงเทพฯ', isPrimary: true },
-      { number: '1129', label: 'กฟผ. ต่างจังหวัด' },
-    ],
-    channels: [
-      { type: 'line', value: '@mea1130', label: 'LINE กฟน.' },
-      { type: 'website', value: 'https://www.mea.or.th', label: 'เว็บไซต์' },
-    ],
-    description: 'ไฟฟ้าขัดข้อง ไฟดับ ไฟตก',
-    icon: AlertTriangle,
-    color: 'bg-gray-700',
-  },
-  {
-    name: 'การประปา',
-    numbers: [
-      { number: '1125', label: 'กปน. กรุงเทพฯ', isPrimary: true },
-      { number: '1662', label: 'กปภ. ต่างจังหวัด' },
-    ],
-    channels: [{ type: 'line', value: '@mwa1125', label: 'LINE กปน.' }],
-    description: 'น้ำประปาขัดข้อง ท่อแตก',
-    icon: Hospital,
-    color: 'bg-gray-700',
-  },
-];
-
 export function EmergencyContacts() {
+  const t = useTranslations('home.emergencyContacts');
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const emergencyContacts: Contact[] = [
+    {
+      name: t('contacts.police.name'),
+      numbers: [
+        { number: '191', label: t('contacts.police.numbers.primary'), isPrimary: true },
+        { number: '1599', label: t('contacts.police.numbers.tourist') },
+        { number: '1137', label: t('contacts.police.numbers.complaint') },
+      ],
+      channels: [
+        { type: 'line', value: '@191police', label: t('contacts.police.channels.line') },
+        {
+          type: 'website',
+          value: 'https://www.royalthaipolice.go.th',
+          label: t('contacts.police.channels.website'),
+        },
+      ],
+      description: t('contacts.police.description'),
+      icon: Shield,
+      color: 'bg-gray-700',
+    },
+    {
+      name: t('contacts.medical.name'),
+      numbers: [
+        { number: '1669', label: t('contacts.medical.numbers.primary'), isPrimary: true },
+        { number: '1646', label: t('contacts.medical.numbers.hospital') },
+        { number: '1554', label: t('contacts.medical.numbers.health') },
+      ],
+      channels: [
+        {
+          type: 'website',
+          value: 'https://niems.go.th',
+          label: t('contacts.medical.channels.website'),
+        },
+      ],
+      description: t('contacts.medical.description'),
+      icon: Ambulance,
+      color: 'bg-primary',
+    },
+    {
+      name: t('contacts.fire.name'),
+      numbers: [
+        { number: '199', label: t('contacts.fire.numbers.primary'), isPrimary: true },
+        { number: '02-246-0199', label: t('contacts.fire.numbers.bma') },
+        { number: '1784', label: t('contacts.fire.numbers.disaster') },
+      ],
+      channels: [
+        { type: 'line', value: '@199fire', label: t('contacts.fire.channels.line') },
+      ],
+      description: t('contacts.fire.description'),
+      icon: Flame,
+      color: 'bg-primary',
+    },
+    {
+      name: t('contacts.disaster.name'),
+      numbers: [
+        { number: '1784', label: t('contacts.disaster.numbers.primary'), isPrimary: true },
+        { number: '02-141-9611', label: t('contacts.disaster.numbers.office') },
+      ],
+      channels: [
+        { type: 'line', value: '@disaster1784', label: t('contacts.disaster.channels.line') },
+        {
+          type: 'website',
+          value: 'https://www.disaster.go.th',
+          label: t('contacts.disaster.channels.website'),
+        },
+        { type: 'email', value: 'disaster@disaster.go.th', label: t('contacts.disaster.channels.email') },
+      ],
+      description: t('contacts.disaster.description'),
+      icon: AlertTriangle,
+      color: 'bg-primary',
+    },
+    {
+      name: t('contacts.health.name'),
+      numbers: [
+        { number: '1422', label: t('contacts.health.numbers.primary'), isPrimary: true },
+        { number: '1330', label: t('contacts.health.numbers.disease') },
+      ],
+      description: t('contacts.health.description'),
+      icon: Heart,
+      color: 'bg-gray-700',
+    },
+    {
+      name: t('contacts.electricity.name'),
+      numbers: [
+        { number: '1130', label: t('contacts.electricity.numbers.primary'), isPrimary: true },
+        { number: '1129', label: t('contacts.electricity.numbers.provincial') },
+      ],
+      channels: [
+        { type: 'line', value: '@mea1130', label: t('contacts.electricity.channels.line') },
+        { type: 'website', value: 'https://www.mea.or.th', label: t('contacts.electricity.channels.website') },
+      ],
+      description: t('contacts.electricity.description'),
+      icon: AlertTriangle,
+      color: 'bg-gray-700',
+    },
+    {
+      name: t('contacts.water.name'),
+      numbers: [
+        { number: '1125', label: t('contacts.water.numbers.primary'), isPrimary: true },
+        { number: '1662', label: t('contacts.water.numbers.provincial') },
+      ],
+      channels: [
+        { type: 'line', value: '@mwa1125', label: t('contacts.water.channels.line') },
+      ],
+      description: t('contacts.water.description'),
+      icon: Hospital,
+      color: 'bg-gray-700',
+    },
+  ];
 
   const channelIcon = (type: ChannelType): ReactNode => {
     switch (type) {
@@ -149,10 +155,8 @@ export function EmergencyContacts() {
   return (
     <div className="space-y-4">
       <div className="space-y-1 py-2 text-center">
-        <h2 className="text-gray-900">เบอร์ฉุกเฉิน</h2>
-        <p className="text-xs text-gray-500">
-          แตะเพื่อโทรออกทันที พร้อมเบอร์หน่วยงานต่างๆ
-        </p>
+        <h2 className="text-gray-900">{t('heading')}</h2>
+        <p className="text-xs text-gray-500">{t('subheading')}</p>
       </div>
 
       <div className="space-y-2">
@@ -216,7 +220,7 @@ export function EmergencyContacts() {
                   {otherNumbers.length > 0 && (
                     <div className="space-y-2">
                       <div className="mb-2 text-xs text-gray-500">
-                        เบอร์เพิ่มเติม
+                        {t('extraNumbers')}
                       </div>
                       {otherNumbers.map(num => (
                         <a
@@ -240,7 +244,7 @@ export function EmergencyContacts() {
                   {contact.channels && (
                     <div className="space-y-2">
                       <div className="mb-2 text-xs text-gray-500">
-                        ช่องทางอื่น
+                        {t('otherChannels')}
                       </div>
                       {contact.channels.map(channel => (
                         <a

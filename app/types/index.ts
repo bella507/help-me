@@ -7,6 +7,7 @@ export interface HelpRequest {
   name: string;
   phone: string;
   location: string;
+  address?: string;
   category: string;
   urgency: 'high' | 'medium' | 'low';
   description: string;
@@ -52,11 +53,13 @@ export interface Shelter {
   id: string;
   name: string;
   location: string;
+  address?: string;
   capacity: number;
   occupied: number;
   currentOccupancy?: number;
   contact: string;
   phone?: string;
+  hours?: string;
   facilities: string[];
   status: 'open' | 'available' | 'limited' | 'full' | 'closed';
   lat?: number;
@@ -91,8 +94,9 @@ export interface DonationNeed {
   item: string;
   category: string;
   urgency: 'low' | 'medium' | 'high';
-  quantity: string;
-  status: 'needed' | 'partial' | 'fulfilled';
+  quantity?: string;
+  status: 'urgent' | 'needed' | 'sufficient';
+  items?: string[];
   unit?: string;
   needed?: number;
   received?: number;

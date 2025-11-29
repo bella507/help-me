@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   Users,
   LogOut,
@@ -28,6 +29,9 @@ import type { HelpRequest } from '@/app/types';
 type Tab = 'my-tasks' | 'available';
 
 export function VolunteerDashboard() {
+  const t = useTranslations('home.volunteerDashboard');
+  const tCommon = useTranslations('home.common');
+  const locale = useLocale();
   const [myTasks, setMyTasks] = useState<HelpRequest[]>([]);
   const [availableTasks, setAvailableTasks] = useState<HelpRequest[]>([]);
   const [selectedTask, setSelectedTask] = useState<HelpRequest | null>(null);
@@ -79,7 +83,7 @@ export function VolunteerDashboard() {
       assignedTo: volunteerId,
       status: REQUEST_STATUS.IN_PROGRESS,
     }));
-    toast.success('รับงานสำเร็จ!');
+    toast.success(t('toast.accepted'));
     setActiveTab('my-tasks');
   };
 
@@ -102,7 +106,7 @@ export function VolunteerDashboard() {
     }
 
     setSelectedTask(null);
-    toast.success('ทำงานเสร็จสิ้น! ขอบคุณสำหรับการช่วยเหลือ');
+    toast.success(t('toast.completed'));
   };
 
   const saveTaskNotes = (taskId: string) => {
@@ -112,7 +116,7 @@ export function VolunteerDashboard() {
     }));
     setTaskNotes('');
     setSelectedTask(null);
-    toast.success('บันทึกหมายเหตุสำเร็จ');
+    toast.success(t('toast.notesSaved'));
   };
 
   const openNavigation = (location: string) => {
@@ -132,6 +136,7 @@ export function VolunteerDashboard() {
     showNotes?: boolean;
   }) => {
     const urgency = getUrgencyBadge(task.urgency);
+    const createdText = formatDate(task.createdAt, locale);
     return (
       <div className="rounded-xl border-2 border-gray-200 bg-white p-4">
         <div className="space-y-3">
@@ -152,7 +157,7 @@ export function VolunteerDashboard() {
               </div>
               <div className="mt-1 flex items-center gap-1 text-xs text-gray-600">
                 <Clock className="h-3.5 w-3.5" />
-                <span>{formatDate(task.createdAt)}</span>
+                <span>{createdText}</span>
               </div>
             </div>
           </div>
@@ -161,16 +166,20 @@ export function VolunteerDashboard() {
             <DetailRow
               icon={<Package className="h-4 w-4 text-gray-400" />}
               label="ประเภท"
-              value={CATEGORY_LABELS[task.category] || task.category}
+              value={
+                tCommon(`categories.${task.category}`, {
+                  fallback: CATEGORY_LABELS[task.category] || task.category,
+                })
+              }
             />
             <DetailRow
               icon={<MapPin className="h-4 w-4 text-gray-400" />}
-              label="สถานที่"
+              label={t('fields.location')}
               value={task.location}
             />
             <DetailRow
               icon={<Phone className="h-4 w-4 text-gray-400" />}
-              label="โทร"
+              label={t('fields.phone')}
               value={
                 <a
                   href={`tel:${task.phone}`}
@@ -182,7 +191,7 @@ export function VolunteerDashboard() {
             />
             <DetailRow
               icon={<MessageCircle className="h-4 w-4 text-gray-400" />}
-              label="รายละเอียด"
+              label={t('fields.description')}
               value={task.description}
             />
           </div>
@@ -190,7 +199,7 @@ export function VolunteerDashboard() {
           {task.notes && (
             <NoteBlock
               tone="yellow"
-              title="หมายเหตุจากแอดมิน"
+              title={t('notes.admin')}
               text={task.notes}
             />
           )}
@@ -198,7 +207,7 @@ export function VolunteerDashboard() {
           {showNotes && task.volunteerNotes && (
             <NoteBlock
               tone="blue"
-              title="หมายเหตุของฉัน"
+              title={t('notes.mine')}
               text={task.volunteerNotes}
             />
           )}
@@ -208,7 +217,7 @@ export function VolunteerDashboard() {
               <textarea
                 value={taskNotes}
                 onChange={e => setTaskNotes(e.target.value)}
-                placeholder="บันทึกความคืบหน้าหรือหมายเหตุ..."
+                placeholder={t('notes.placeholder')}
                 className="w-full resize-none rounded-lg border-2 border-gray-200 px-3 py-2 text-sm outline-none focus:border-primary"
                 rows={3}
               />
@@ -217,7 +226,7 @@ export function VolunteerDashboard() {
                   onClick={() => saveTaskNotes(task.id)}
                   className="rounded-lg bg-primary px-4 py-2 text-sm text-white transition-colors hover:bg-[#e14a21]"
                 >
-                  บันทึก
+                  {t('actions.save')}
                 </button>
                 <button
                   onClick={() => {
@@ -226,7 +235,7 @@ export function VolunteerDashboard() {
                   }}
                   className="rounded-lg border-2 border-gray-200 px-4 py-2 text-sm text-gray-700 transition-colors hover:border-gray-300"
                 >
-                  ยกเลิก
+                  {t('actions.cancel')}
                 </button>
               </div>
             </div>
@@ -268,13 +277,13 @@ export function VolunteerDashboard() {
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-6 grid grid-cols-2 gap-4">
           <StatCard
-            label="งานของฉัน"
+            label={t('stats.myTasks')}
             value={stats.my}
             tone="blue"
             icon={<Package className="h-6 w-6 text-blue-600" />}
           />
           <StatCard
-            label="งานใหม่"
+            label={t('stats.available')}
             value={stats.available}
             tone="green"
             icon={<AlertCircle className="h-6 w-6 text-green-600" />}
@@ -286,12 +295,12 @@ export function VolunteerDashboard() {
             <TabButton
               active={activeTab === 'my-tasks'}
               onClick={() => setActiveTab('my-tasks')}
-              label={`งานของฉัน (${stats.my})`}
+              label={t('tabs.myTasksWithCount', { count: stats.my })}
             />
             <TabButton
               active={activeTab === 'available'}
               onClick={() => setActiveTab('available')}
-              label={`งานที่รับได้ (${stats.available})`}
+              label={t('tabs.availableWithCount', { count: stats.available })}
             />
           </div>
         </div>
@@ -301,8 +310,8 @@ export function VolunteerDashboard() {
             {myTasks.length === 0 ? (
               <EmptyState
                 icon={<Package className="h-16 w-16 text-gray-300" />}
-                title="คุณยังไม่มีงานที่ต้องทำ"
-                actionLabel="ดูงานที่รับได้"
+                title={t('empty.myTasks')}
+                actionLabel={t('empty.viewAvailable')}
                 onAction={() => setActiveTab('available')}
               />
             ) : (
@@ -318,14 +327,14 @@ export function VolunteerDashboard() {
                         className="flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-700"
                       >
                         <Navigation className="h-4 w-4" />
-                        <span>นำทาง</span>
+                        <span>{t('actions.navigate')}</span>
                       </button>
                       <a
                         href={`tel:${task.phone}`}
                         className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm text-white transition-colors hover:bg-green-700"
                       >
                         <Phone className="h-4 w-4" />
-                        <span>โทร</span>
+                        <span>{t('actions.call')}</span>
                       </a>
                       <button
                         onClick={() => {
@@ -335,14 +344,14 @@ export function VolunteerDashboard() {
                         className="flex items-center gap-2 rounded-lg border-2 border-gray-200 px-4 py-2 text-sm text-gray-700 transition-colors hover:border-gray-300"
                       >
                         <MessageCircle className="h-4 w-4" />
-                        <span>เพิ่มหมายเหตุ</span>
+                        <span>{t('actions.addNotes')}</span>
                       </button>
                       <button
                         onClick={() => completeTask(task.id)}
                         className="ml-auto flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm text-white transition-colors hover:bg-green-700"
                       >
                         <CheckCircle className="h-4 w-4" />
-                        <span>ทำเสร็จแล้ว</span>
+                        <span>{t('actions.complete')}</span>
                       </button>
                     </div>
                   }
@@ -357,7 +366,7 @@ export function VolunteerDashboard() {
             {availableTasks.length === 0 ? (
               <EmptyState
                 icon={<AlertCircle className="h-16 w-16 text-gray-300" />}
-                title="ไม่มีงานใหม่ในขณะนี้"
+                title={t('empty.available')}
               />
             ) : (
               availableTasks.map(task => (
@@ -371,14 +380,14 @@ export function VolunteerDashboard() {
                         className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm text-white transition-colors hover:bg-[#e14a21]"
                       >
                         <CheckCircle className="h-4 w-4" />
-                        <span>รับงานนี้</span>
+                        <span>{t('actions.accept')}</span>
                       </button>
                       <button
                         onClick={() => openNavigation(task.location)}
                         className="flex items-center gap-2 rounded-lg border-2 border-gray-200 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:border-gray-300"
                       >
                         <MapPin className="h-4 w-4" />
-                        <span>ดูแผนที่</span>
+                        <span>{t('actions.viewMap')}</span>
                       </button>
                     </div>
                   }

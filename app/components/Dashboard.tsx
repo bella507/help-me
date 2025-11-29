@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   BarChart3,
   Users,
@@ -12,6 +13,8 @@ import {
 import type { HelpRequest, Volunteer } from '@/app/types';
 
 export function Dashboard() {
+  const t = useTranslations('home.dashboard');
+  const tCommon = useTranslations('home.common');
   const [stats, setStats] = useState({
     totalRequests: 0,
     pending: 0,
@@ -83,12 +86,12 @@ export function Dashboard() {
   }, []);
 
   const categoryLabels: Record<string, string> = {
-    food: 'อาหารและน้ำดื่ม',
-    shelter: 'ที่พักพิง',
-    medical: 'การรักษาพยาบาล',
-    clothing: 'เสื้อผ้า',
-    evacuation: 'ขอการอพยพ',
-    other: 'อื่นๆ',
+    food: tCommon('categories.food'),
+    shelter: tCommon('categories.shelter'),
+    medical: tCommon('categories.medical'),
+    clothing: tCommon('categories.clothing'),
+    evacuation: tCommon('categories.evacuation'),
+    other: tCommon('categories.other'),
   };
 
   return (
@@ -100,10 +103,8 @@ export function Dashboard() {
             <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-gray-900">แดชบอร์ดภาพรวม</h2>
-            <p className="text-xs sm:text-sm text-gray-500">
-              สถิติและข้อมูลสรุป
-            </p>
+            <h2 className="text-gray-900">{t('title')}</h2>
+            <p className="text-xs sm:text-sm text-gray-500">{t('subtitle')}</p>
           </div>
         </div>
       </div>
@@ -115,13 +116,15 @@ export function Dashboard() {
             <div className="bg-blue-50 p-2 rounded-lg">
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">คำขอทั้งหมด</div>
+            <div className="text-xs sm:text-sm text-gray-600">
+              {t('cards.total')}
+            </div>
           </div>
           <div className="text-2xl sm:text-3xl text-gray-900">
             {stats.totalRequests}
           </div>
           <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
-            รายการ
+            {t('cards.unit')}
           </div>
         </div>
 
@@ -130,13 +133,15 @@ export function Dashboard() {
             <div className="bg-orange-50 p-2 rounded-lg">
               <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">รอดำเนินการ</div>
+            <div className="text-xs sm:text-sm text-gray-600">
+              {tCommon('status.pending')}
+            </div>
           </div>
           <div className="text-2xl sm:text-3xl text-orange-600">
             {stats.pending}
           </div>
           <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
-            รายการ
+            {t('cards.unit')}
           </div>
         </div>
 
@@ -145,13 +150,15 @@ export function Dashboard() {
             <div className="bg-green-50 p-2 rounded-lg">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">สำเร็จแล้ว</div>
+            <div className="text-xs sm:text-sm text-gray-600">
+              {tCommon('status.completed')}
+            </div>
           </div>
           <div className="text-2xl sm:text-3xl text-green-600">
             {stats.completed}
           </div>
           <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
-            รายการ
+            {t('cards.unit')}
           </div>
         </div>
 
@@ -160,13 +167,15 @@ export function Dashboard() {
             <div className="bg-red-50 p-2 rounded-lg">
               <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
             </div>
-            <div className="text-xs sm:text-sm text-gray-600">เร่งด่วน</div>
+            <div className="text-xs sm:text-sm text-gray-600">
+              {t('cards.urgent')}
+            </div>
           </div>
           <div className="text-2xl sm:text-3xl text-red-600">
             {stats.urgentRequests}
           </div>
           <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
-            รายการ
+            {t('cards.unit')}
           </div>
         </div>
       </div>
@@ -176,36 +185,44 @@ export function Dashboard() {
         <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-2">
             <Users className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            <div className="text-xs sm:text-sm text-gray-600">อาสาสมัคร</div>
+            <div className="text-xs sm:text-sm text-gray-600">
+              {t('cards.volunteers')}
+            </div>
           </div>
           <div className="text-xl sm:text-2xl text-gray-900">
             {stats.volunteers}
           </div>
-          <div className="text-[10px] sm:text-xs text-gray-500 mt-1">คน</div>
+          <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
+            {t('cards.people')}
+          </div>
         </div>
 
         <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
           <div className="flex items-center gap-2 mb-2">
             <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-            <div className="text-xs sm:text-sm text-gray-600">ศูนย์พักพิง</div>
+            <div className="text-xs sm:text-sm text-gray-600">
+              {t('cards.shelters')}
+            </div>
           </div>
           <div className="text-xl sm:text-2xl text-gray-900">
             {stats.shelters}
           </div>
-          <div className="text-[10px] sm:text-xs text-gray-500 mt-1">แห่ง</div>
+          <div className="text-[10px] sm:text-xs text-gray-500 mt-1">
+            {t('cards.places')}
+          </div>
         </div>
       </div>
 
       {/* Status Breakdown */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-        <h3 className="text-gray-900 mb-3 sm:mb-4">สถานะคำขอ</h3>
+        <h3 className="text-gray-900 mb-3 sm:mb-4">{t('sections.status')}</h3>
         <div className="space-y-3">
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-orange-500"></div>
                 <span className="text-xs sm:text-sm text-gray-700">
-                  รอดำเนินการ
+                  {tCommon('status.pending')}
                 </span>
               </div>
               <span className="text-xs sm:text-sm text-gray-900">
@@ -230,7 +247,7 @@ export function Dashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                 <span className="text-xs sm:text-sm text-gray-700">
-                  กำลังดำเนินการ
+                  {tCommon('status.in-progress')}
                 </span>
               </div>
               <span className="text-xs sm:text-sm text-gray-900">
@@ -255,7 +272,7 @@ export function Dashboard() {
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full bg-green-500"></div>
                 <span className="text-xs sm:text-sm text-gray-700">
-                  สำเร็จแล้ว
+                  {tCommon('status.completed')}
                 </span>
               </div>
               <span className="text-xs sm:text-sm text-gray-900">
@@ -279,7 +296,9 @@ export function Dashboard() {
 
       {/* Category Breakdown */}
       <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-        <h3 className="text-gray-900 mb-3 sm:mb-4">ประเภทความช่วยเหลือ</h3>
+        <h3 className="text-gray-900 mb-3 sm:mb-4">
+          {t('sections.categories')}
+        </h3>
         <div className="space-y-2 sm:space-y-3">
           {Object.entries(categoryStats).map(([category, count]) => (
             <div
@@ -304,7 +323,7 @@ export function Dashboard() {
       {areaStats.length > 0 && (
         <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
           <h3 className="text-gray-900 mb-3 sm:mb-4">
-            พื้นที่ที่ต้องการความช่วยเหลือมากสุด
+            {t('sections.topAreas')}
           </h3>
           <div className="space-y-2 sm:space-y-3">
             {areaStats.map((item, idx) => (
@@ -321,7 +340,7 @@ export function Dashboard() {
                   </span>
                 </div>
                 <span className="text-sm sm:text-base text-gray-900">
-                  {item.count} รายการ
+                  {item.count} {t('cards.unit')}
                 </span>
               </div>
             ))}
@@ -334,9 +353,9 @@ export function Dashboard() {
         <div className="flex gap-2 sm:gap-3">
           <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 shrink-0 mt-0.5" />
           <div className="text-xs sm:text-sm text-blue-700">
-            <p className="text-blue-900 mb-1">ข้อมูลอัพเดทแบบเรียลไทม์</p>
+            <p className="text-blue-900 mb-1">{t('info.title')}</p>
             <p className="text-[10px] sm:text-xs text-blue-600">
-              ข้อมูลอัพเดทอัตโนมัติทุก 5 วินาที จากระบบ
+              {t('info.subtitle')}
             </p>
           </div>
         </div>

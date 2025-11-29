@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { unflatten } from '../utils/flattenMessages';
 import {
   AlertOctagon,
   AlertTriangle,
   BarChart3,
   Bed,
   BookOpen,
-  Heart,
   FileText,
   Globe,
+  Heart,
   HelpCircle,
   Map,
   Menu,
@@ -18,74 +19,96 @@ import {
   Phone,
   Users,
 } from 'lucide-react';
+import {
+  NextIntlClientProvider,
+  useTranslations,
+  type AbstractIntlMessages,
+} from 'next-intl';
 import type { Language, TabType, UserRole } from '@/app/types';
-import { HelpRequestForm } from './components/HelpRequestForm';
-import { NewsFeed } from './components/NewsFeed';
-import { RequestsList } from './components/RequestsList';
-import { SheltersList } from './components/SheltersList';
-import { MapOverview } from './components/MapOverview';
-import { EmergencyContacts } from './components/EmergencyContacts';
-import { PreparationGuide } from './components/PreparationGuide';
-import { VolunteerForm } from './components/VolunteerForm';
-import { DonationsList } from './components/DonationsList';
-import { FAQ } from './components/FAQ';
-import { RiskAreas } from './components/RiskAreas';
-import { MyRequests } from './components/MyRequests';
-import { Weather } from './components/Weather';
-import { Dashboard } from './components/Dashboard';
-import { AdminLogin } from './components/AdminLogin';
 import { AdminDashboard } from './components/AdminDashboard';
-import { VolunteerDashboard } from './components/VolunteerDashboard';
+import { AdminLogin } from './components/AdminLogin';
+import { Dashboard } from './components/Dashboard';
+import { DonationsList } from './components/DonationsList';
+import { EmergencyContacts } from './components/EmergencyContacts';
+import { FAQ } from './components/FAQ';
+import { HelpRequestForm } from './components/HelpRequestForm';
+import { MapOverview } from './components/MapOverview';
+import { MyRequests } from './components/MyRequests';
+import { NewsFeed } from './components/NewsFeed';
+import { PreparationGuide } from './components/PreparationGuide';
+import { RequestsList } from './components/RequestsList';
+import { RiskAreas } from './components/RiskAreas';
+import { SheltersList } from './components/SheltersList';
 import { Toaster } from './components/ui/sonner';
+import { VolunteerDashboard } from './components/VolunteerDashboard';
+import { VolunteerForm } from './components/VolunteerForm';
+import { Weather } from './components/Weather';
 import { initializeMockData } from './data/mockData';
-import { HomeHeader } from './components/home/HomeHeader';
+import { EmergencyFooter } from './components/home/EmergencyFooter';
 import { HeroSection } from './components/home/HeroSection';
-import { TabNavigation, type HomeTab } from './components/home/TabNavigation';
+import { HomeHeader } from './components/home/HomeHeader';
 import { MenuOverlay } from './components/home/MenuOverlay';
 import { SosControls } from './components/home/SosControls';
-import { EmergencyFooter } from './components/home/EmergencyFooter';
+import { TabNavigation, type HomeTab } from './components/home/TabNavigation';
+import enMessages from '../messages/en.json';
+import thMessages from '../messages/th.json';
 
 type MenuItem = HomeTab & { description?: string };
 
-const TRANSLATIONS: Record<
-  Language,
-  {
+type MenuCopy = {
+  emergency: { label: string; description: string };
+  guide: { label: string; description: string };
+  volunteer: { label: string; description: string };
+  donations: { label: string; description: string };
+  risk: { label: string; description: string };
+  faq: { label: string; description: string };
+  myRequests: { label: string; description: string };
+  weather: { label: string; description: string };
+  dashboard: { label: string; description: string };
+};
+
+type HeroCopy = {
+  badge: string;
+  titleLine1: string;
+  titleLine2: string;
+  description: string;
+  stats: { value: string; label: string }[];
+  requestCta: string;
+  callButton: string;
+  callNumber: string;
+  trust: { safe: string; reliable: string; helped: string };
+  emergencyCardTitle: string;
+  emergencyCardSubtitle: string;
+  numbers: Array<{
+    number: string;
     title: string;
-    subtitle: string;
-    request: string;
-    news: string;
-    status: string;
-    shelters: string;
-    map: string;
-    menu: string;
-    emergency: string;
-    sos: string;
-  }
-> = {
-  th: {
-    title: 'ศูนย์ช่วยเหลือผู้ประสบภัย',
-    subtitle: 'พร้อมดูแลคุณตลอด 24 ชม.',
-    request: 'ขอความช่วยเหลือ',
-    news: 'ข่าวสาร',
-    status: 'ติดตามสถานะ',
-    shelters: 'ที่พักพิง',
-    map: 'แผนที่',
-    menu: 'เมนูเพิ่มเติม',
-    emergency: 'กรณีฉุกเฉิน โทร',
-    sos: 'SOS ฉุกเฉิน',
-  },
-  en: {
-    title: 'Disaster Relief Center',
-    subtitle: '24/7 Support Available',
-    request: 'Request Help',
-    news: 'News',
-    status: 'Track Status',
-    shelters: 'Shelters',
-    map: 'Map',
-    menu: 'More',
-    emergency: 'Emergency Call',
-    sos: 'SOS Emergency',
-  },
+    description: string;
+    tone: 'red' | 'blue' | 'orange';
+  }>;
+};
+
+type HeroCopyRaw = Omit<HeroCopy, 'stats'> & {
+  stats: {
+    openValue: string;
+    openLabel: string;
+    freeValue: string;
+    freeLabel: string;
+    responseValue: string;
+    responseLabel: string;
+  };
+};
+
+type SosCopy = {
+  modalTitle: string;
+  modalSubtitle: string;
+  callPoliceTitle: string;
+  callPoliceDesc: string;
+  callMedicalTitle: string;
+  callMedicalDesc: string;
+  shareLabel: string;
+  shareTitle: string;
+  shareText: string;
+  closeLabel: string;
 };
 
 export default function App() {
@@ -94,7 +117,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('request');
   const [showMenu, setShowMenu] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
-  const [language, setLanguage] = useState<Language>('th');
+  const [language, setLanguage] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'th';
+    const stored = localStorage.getItem('language');
+    return stored === 'en' ? 'en' : 'th';
+  });
 
   useEffect(() => {
     const link1 = document.createElement('link');
@@ -130,32 +157,158 @@ export default function App() {
     };
   }, []);
 
-  const t = TRANSLATIONS[language];
+  useEffect(() => {
+    document.documentElement.lang = language;
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  // Load the appropriate messages based on language
+  const rawMessages = language === 'en' ? enMessages : thMessages;
+
+  // Convert the flat messages back to nested structure for easier use in components
+  const messages = useMemo(
+    () => unflatten(rawMessages) as AbstractIntlMessages,
+    [rawMessages]
+  );
+
+  return (
+    <NextIntlClientProvider
+      locale={language}
+      messages={messages}
+      timeZone="Asia/Bangkok"
+    >
+      <AppContent
+        userRole={userRole}
+        setUserRole={setUserRole}
+        showLogin={showLogin}
+        setShowLogin={setShowLogin}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        showMenu={showMenu}
+        setShowMenu={setShowMenu}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        language={language}
+        setLanguage={setLanguage}
+      />
+    </NextIntlClientProvider>
+  );
+}
+
+type AppContentProps = {
+  userRole: UserRole;
+  setUserRole: (role: UserRole) => void;
+  showLogin: boolean;
+  setShowLogin: (show: boolean) => void;
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
+  showMenu: boolean;
+  setShowMenu: (show: boolean | ((prev: boolean) => boolean)) => void;
+  darkMode: boolean;
+  setDarkMode: (value: boolean | ((prev: boolean) => boolean)) => void;
+  language: Language;
+  setLanguage: (value: Language | ((prev: Language) => Language)) => void;
+};
+
+function AppContent({
+  userRole,
+  setUserRole,
+  showLogin,
+  setShowLogin,
+  activeTab,
+  setActiveTab,
+  showMenu,
+  setShowMenu,
+  darkMode,
+  setDarkMode,
+  language,
+  setLanguage,
+}: AppContentProps) {
+  const t = useTranslations('home');
+  const heroRaw = t.raw('hero') as HeroCopyRaw;
+  const heroCopy: HeroCopy = {
+    ...heroRaw,
+    stats: [
+      { value: heroRaw.stats.openValue, label: heroRaw.stats.openLabel },
+      { value: heroRaw.stats.freeValue, label: heroRaw.stats.freeLabel },
+      {
+        value: heroRaw.stats.responseValue,
+        label: heroRaw.stats.responseLabel,
+      },
+    ],
+  };
+  const sosCopy = t.raw('sosCopy') as SosCopy;
+  const menuCopy = t.raw('menuItems') as MenuCopy;
 
   const mainTabs = useMemo<HomeTab[]>(
     () => [
-      { id: 'request', icon: FileText, label: t.request },
-      { id: 'news', icon: Newspaper, label: t.news },
-      { id: 'status', icon: Heart, label: t.status },
-      { id: 'shelters', icon: Bed, label: t.shelters },
-      { id: 'map', icon: Map, label: t.map },
+      { id: 'request', icon: FileText, label: t('request') },
+      { id: 'news', icon: Newspaper, label: t('news') },
+      { id: 'status', icon: Heart, label: t('status') },
+      { id: 'shelters', icon: Bed, label: t('shelters') },
+      { id: 'map', icon: Map, label: t('map') },
     ],
     [t]
   );
 
   const menuItems = useMemo<MenuItem[]>(
     () => [
-      { id: 'emergency', icon: Phone, label: t.emergency, description: 'หมายเลขติดต่อสำคัญ' },
-      { id: 'guide', icon: BookOpen, label: 'คู่มือเตรียมพร้อม', description: 'แนวทางรับมือภัย' },
-      { id: 'volunteer', icon: Users, label: 'อาสาสมัคร', description: 'ลงทะเบียนช่วยเหลือ' },
-      { id: 'donations', icon: Package, label: 'ของบริจาค', description: 'สิ่งของที่ต้องการ' },
-      { id: 'risk', icon: AlertTriangle, label: 'พื้นที่เสี่ยง', description: 'ข้อมูลพื้นที่เสี่ยงภัย' },
-      { id: 'faq', icon: HelpCircle, label: 'คำถามที่พบบ่อย', description: 'FAQ และคำตอบ' },
-      { id: 'my-requests', icon: AlertOctagon, label: 'คำขอของฉัน', description: 'คำขอที่คุณส่ง' },
-      { id: 'weather', icon: Globe, label: 'สภาพอากาศ', description: 'ตรวจสอบสภาพอากาศ' },
-      { id: 'dashboard', icon: BarChart3, label: 'แดชบอร์ด', description: 'ภาพรวมสถานการณ์' },
+      {
+        id: 'emergency',
+        icon: Phone,
+        label: menuCopy.emergency.label,
+        description: menuCopy.emergency.description,
+      },
+      {
+        id: 'guide',
+        icon: BookOpen,
+        label: menuCopy.guide.label,
+        description: menuCopy.guide.description,
+      },
+      {
+        id: 'volunteer',
+        icon: Users,
+        label: menuCopy.volunteer.label,
+        description: menuCopy.volunteer.description,
+      },
+      {
+        id: 'donations',
+        icon: Package,
+        label: menuCopy.donations.label,
+        description: menuCopy.donations.description,
+      },
+      {
+        id: 'risk',
+        icon: AlertTriangle,
+        label: menuCopy.risk.label,
+        description: menuCopy.risk.description,
+      },
+      {
+        id: 'faq',
+        icon: HelpCircle,
+        label: menuCopy.faq.label,
+        description: menuCopy.faq.description,
+      },
+      {
+        id: 'my-requests',
+        icon: AlertOctagon,
+        label: menuCopy.myRequests.label,
+        description: menuCopy.myRequests.description,
+      },
+      {
+        id: 'weather',
+        icon: Globe,
+        label: menuCopy.weather.label,
+        description: menuCopy.weather.description,
+      },
+      {
+        id: 'dashboard',
+        icon: BarChart3,
+        label: menuCopy.dashboard.label,
+        description: menuCopy.dashboard.description,
+      },
     ],
-    [t.emergency]
+    [menuCopy]
   );
 
   const handleLogin = (role: 'admin' | 'volunteer') => {
@@ -164,7 +317,9 @@ export default function App() {
   };
 
   if (showLogin && userRole === 'user') {
-    return <AdminLogin onLogin={handleLogin} onBack={() => setShowLogin(false)} />;
+    return (
+      <AdminLogin onLogin={handleLogin} onBack={() => setShowLogin(false)} />
+    );
   }
 
   if (userRole === 'admin') {
@@ -177,28 +332,35 @@ export default function App() {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <SosControls onRequest={() => setActiveTab('request')} />
+      <SosControls copy={sosCopy} onRequest={() => setActiveTab('request')} />
 
       <HomeHeader
         darkMode={darkMode}
         language={language}
-        onToggleDarkMode={() => setDarkMode((prev) => !prev)}
-        onToggleLanguage={() => setLanguage((prev) => (prev === 'th' ? 'en' : 'th'))}
+        title={t('title')}
+        onToggleDarkMode={() => setDarkMode(prev => !prev)}
+        onToggleLanguage={() =>
+          setLanguage(prev => (prev === 'th' ? 'en' : 'th'))
+        }
       />
 
-      <HeroSection darkMode={darkMode} onRequest={() => setActiveTab('request')} />
+      <HeroSection
+        darkMode={darkMode}
+        onRequest={() => setActiveTab('request')}
+        copy={heroCopy}
+      />
 
       <TabNavigation
         tabs={mainTabs}
         activeTab={activeTab}
-        menuLabel={t.menu}
+        menuLabel={t('menu')}
         menuIcon={Menu}
         showMenu={showMenu}
-        onSelect={(tab) => {
+        onSelect={tab => {
           setActiveTab(tab);
           setShowMenu(false);
         }}
-        onToggleMenu={() => setShowMenu((prev) => !prev)}
+        onToggleMenu={() => setShowMenu(prev => !prev)}
       />
 
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 sm:pb-24 sm:pt-6 lg:px-8">
@@ -218,14 +380,19 @@ export default function App() {
         {activeTab === 'dashboard' && <Dashboard />}
       </main>
 
-      <EmergencyFooter emergencyLabel={t.emergency} onLogin={() => setShowLogin(true)} />
+      <EmergencyFooter
+        emergencyLabel={t('emergency')}
+        loginLabel={t('login')}
+        orLabel={t('common.or')}
+        onLogin={() => setShowLogin(true)}
+      />
 
       <MenuOverlay
         open={showMenu}
-        menuLabel={t.menu}
+        menuLabel={t('menu')}
         items={menuItems}
         activeTab={activeTab}
-        onSelect={(tab) => {
+        onSelect={tab => {
           setActiveTab(tab);
           setShowMenu(false);
         }}

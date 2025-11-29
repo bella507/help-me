@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   User,
   Phone as PhoneIcon,
@@ -40,29 +41,29 @@ type FormData = {
 };
 
 type IconType = React.ComponentType<{ className?: string }>;
-type CategoryOption = { value: string; label: string; icon: IconType };
-type RiskOption = { value: string; label: string; icon: IconType };
+type CategoryOption = { value: string; icon: IconType };
+type RiskOption = { value: string; icon: IconType };
 
 const TOTAL_STEPS = 5;
 const INPUT_CLASS =
-  'w-full rounded-lg border border-gray-200 px-4 py-3 outline-none transition-all placeholder:text-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20';
+  'w-full text-black rounded-lg border border-gray-200 px-4 py-3 outline-none transition-all placeholder:text-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20';
 
 const CATEGORY_OPTIONS: CategoryOption[] = [
-  { value: 'food', label: 'อาหาร/น้ำ', icon: Utensils },
-  { value: 'shelter', label: 'ที่พักพิง', icon: Home },
-  { value: 'medical', label: 'พยาบาล', icon: Stethoscope },
-  { value: 'clothing', label: 'เสื้อผ้า', icon: Shirt },
-  { value: 'evacuation', label: 'อพยพ', icon: Car },
-  { value: 'other', label: 'อื่นๆ', icon: Package },
+  { value: 'food', icon: Utensils },
+  { value: 'shelter', icon: Home },
+  { value: 'medical', icon: Stethoscope },
+  { value: 'clothing', icon: Shirt },
+  { value: 'evacuation', icon: Car },
+  { value: 'other', icon: Package },
 ];
 
 const RISK_OPTIONS: RiskOption[] = [
-  { value: 'elderly', label: 'ผู้สูงอายุ (60 ปีขึ้นไป)', icon: Users },
-  { value: 'children', label: 'เด็กเล็ก (ต่ำกว่า 5 ปี)', icon: Baby },
-  { value: 'disabled', label: 'ผู้พิการ/ผู้ป่วยติดเตียง', icon: Accessibility },
-  { value: 'pregnant', label: 'หญิงมีครรภ์', icon: HeartPulse },
-  { value: 'pets', label: 'สัตว์เลี้ยง', icon: PawPrint },
-  { value: 'medical', label: 'ต้องการยาหรืออุปกรณ์ทางการแพทย์', icon: Pill },
+  { value: 'elderly', icon: Users },
+  { value: 'children', icon: Baby },
+  { value: 'disabled', icon: Accessibility },
+  { value: 'pregnant', icon: HeartPulse },
+  { value: 'pets', icon: PawPrint },
+  { value: 'medical', icon: Pill },
 ];
 
 const EMPTY_FORM: FormData = {
@@ -79,6 +80,7 @@ const EMPTY_FORM: FormData = {
 };
 
 export function HelpRequestForm() {
+  const t = useTranslations('home.requestForm');
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
 
@@ -137,7 +139,7 @@ export function HelpRequestForm() {
     };
 
     requestStorage.add(newRequest);
-    toast.success('ส่งคำขอความช่วยเหลือเรียบร้อยแล้ว');
+    toast.success(t('toastSuccess'));
     setFormData(EMPTY_FORM);
     setStep(1);
   };
@@ -159,7 +161,7 @@ export function HelpRequestForm() {
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm text-gray-600">
-            ขั้นตอนที่ {step} จาก {TOTAL_STEPS}
+            {t('stepLabel', { step, total: TOTAL_STEPS })}
           </span>
           <span className="text-sm text-gray-600">{progress}%</span>
         </div>
@@ -175,27 +177,27 @@ export function HelpRequestForm() {
         {step === 1 && (
           <Section
             icon={<User className="h-5 w-5 text-gray-700" />}
-            title="ข้อมูลผู้ขอความช่วยเหลือ"
-            subtitle="ชื่อและเบอร์ติดต่อของคุณ"
+            title={t('sections.profile.title')}
+            subtitle={t('sections.profile.subtitle')}
           >
             <div className="space-y-4">
-              <Field label="ชื่อ-นามสกุล" required>
+              <Field label={t('fields.name')} required>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={e => setField('name', e.target.value)}
                   className={INPUT_CLASS}
-                  placeholder="กรอกชื่อ-นามสกุล"
+                  placeholder={t('fields.namePlaceholder')}
                 />
               </Field>
 
-              <Field label="เบอร์โทรศัพท์" required>
+              <Field label={t('fields.phone')} required>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={e => setField('phone', e.target.value)}
                   className={INPUT_CLASS}
-                  placeholder="0xx-xxx-xxxx"
+                  placeholder={t('fields.phonePlaceholder')}
                 />
               </Field>
             </div>
@@ -205,27 +207,27 @@ export function HelpRequestForm() {
         {step === 2 && (
           <Section
             icon={<MapPin className="h-5 w-5 text-gray-700" />}
-            title="ที่อยู่ของคุณ"
-            subtitle="เพื่อให้เราไปช่วยเหลือคุณได้"
+            title={t('sections.location.title')}
+            subtitle={t('sections.location.subtitle')}
           >
             <div className="space-y-4">
-              <Field label="จังหวัด/อำเภอ" required>
+              <Field label={t('fields.location')} required>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={e => setField('location', e.target.value)}
                   className={INPUT_CLASS}
-                  placeholder="เช่น กรุงเทพมหานคร, เขตบางกอกน้อย"
+                  placeholder={t('fields.locationPlaceholder')}
                 />
               </Field>
 
-              <Field label="ที่อยู่โดยละเอียด (ถ้ามี)">
+              <Field label={t('fields.address')}>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={e => setField('address', e.target.value)}
                   className={INPUT_CLASS}
-                  placeholder="บ้านเลขที่ ถนน ตำบล"
+                  placeholder={t('fields.addressPlaceholder')}
                 />
               </Field>
             </div>
@@ -235,13 +237,14 @@ export function HelpRequestForm() {
         {step === 3 && (
           <Section
             icon={<Package className="h-5 w-5 text-gray-700" />}
-            title="ต้องการความช่วยเหลืออะไร"
-            subtitle="เลือกได้ 1 อย่าง"
+            title={t('sections.needs.title')}
+            subtitle={t('sections.needs.subtitle')}
           >
             <div className="mb-6 grid grid-cols-2 gap-3">
               {CATEGORY_OPTIONS.map(cat => {
                 const Icon = cat.icon;
                 const active = formData.category === cat.value;
+                const label = t(`categories.${cat.value}`);
                 return (
                   <button
                     key={cat.value}
@@ -266,14 +269,14 @@ export function HelpRequestForm() {
                         active ? 'text-gray-900' : 'text-gray-600'
                       )}
                     >
-                      {cat.label}
+                      {label}
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            <Field label="ระดับความเร่งด่วน" required>
+            <Field label={t('urgency.label')} required>
               <div className="grid grid-cols-3 gap-3">
                 <UrgencyButton
                   active={formData.urgency === 'low'}
@@ -288,7 +291,7 @@ export function HelpRequestForm() {
                       )}
                     />
                   }
-                  label="ไม่เร่งด่วน"
+                  label={t('urgency.low')}
                   className={cn(
                     'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'low'
@@ -309,7 +312,7 @@ export function HelpRequestForm() {
                       )}
                     />
                   }
-                  label="ปานกลาง"
+                  label={t('urgency.medium')}
                   className={cn(
                     'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'medium'
@@ -330,7 +333,7 @@ export function HelpRequestForm() {
                       )}
                     />
                   }
-                  label="เร่งด่วน"
+                  label={t('urgency.high')}
                   className={cn(
                     'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'high'
@@ -341,13 +344,13 @@ export function HelpRequestForm() {
               </div>
             </Field>
 
-            <Field label="อธิบายสถานการณ์ (ถ้ามี)">
+            <Field label={t('fields.description')}>
               <textarea
                 value={formData.description}
                 onChange={e => setField('description', e.target.value)}
                 rows={3}
                 className={cn(INPUT_CLASS, 'resize-none')}
-                placeholder="เช่น บ้านท่วมน้ำสูง 1 เมตร ต้องการอาหารและน้ำดื่ม"
+                placeholder={t('fields.descriptionPlaceholder')}
               />
             </Field>
           </Section>
@@ -356,20 +359,20 @@ export function HelpRequestForm() {
         {step === 4 && (
           <Section
             icon={<Users className="h-5 w-5 text-gray-700" />}
-            title="กลุ่มเสี่ยงพิเศษ"
-            subtitle="เลือกได้หลายอย่าง (ถ้ามี)"
+            title={t('sections.risk.title')}
+            subtitle={t('sections.risk.subtitle')}
           >
             <div className="mb-4 space-y-3">
               {RISK_OPTIONS.map(group => {
                 const Icon = group.icon;
                 const isSelected = formData.riskGroups.includes(group.value);
                 const placeholderMap: Record<string, string> = {
-                  elderly: 'เช่น 2 คน, เคลื่อนไหวได้บ้าง, มีโรคเบาหวาน',
-                  children: 'เช่น 1 คน, อายุ 3 ขวบ',
-                  disabled: 'เช่น 1 คน, ใช้รถเข็น, ต้องการอุปกรณ์ช่วยเหลือ',
-                  pregnant: 'เช่น ตั้งครรภ์ 7 เดือน',
-                  pets: 'เช่น สุนัข 2 ตัว (ขนาดใหญ่) แมว 1 ตัว',
-                  medical: 'เช่น ยาความดันโลหิตสูง, เครื่องวัดน้ำตาล, ออกซิเจน',
+                  elderly: t('risk.placeholders.elderly'),
+                  children: t('risk.placeholders.children'),
+                  disabled: t('risk.placeholders.disabled'),
+                  pregnant: t('risk.placeholders.pregnant'),
+                  pets: t('risk.placeholders.pets'),
+                  medical: t('risk.placeholders.medical'),
                 };
 
                 return (
@@ -397,7 +400,7 @@ export function HelpRequestForm() {
                             isSelected ? 'text-gray-900' : 'text-gray-600'
                           )}
                         >
-                          {group.label}
+                          {t(`risk.labels.${group.value}`)}
                         </span>
                         <div
                           className={cn(
@@ -434,9 +437,7 @@ export function HelpRequestForm() {
 
             {formData.riskGroups.length === 0 && (
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
-                <p className="text-sm text-gray-600">
-                  หากไม่มีกลุ่มเสี่ยงพิเศษ กดถัดไปได้เลย
-                </p>
+                <p className="text-sm text-gray-600">{t('risk.emptyHint')}</p>
               </div>
             )}
           </Section>
@@ -445,12 +446,12 @@ export function HelpRequestForm() {
         {step === 5 && (
           <Section
             icon={<CheckCircle2 className="h-5 w-5 text-primary" />}
-            title="ตรวจสอบข้อมูลก่อนส่ง"
-            subtitle="กรุณาตรวจสอบความถูกต้อง"
+            title={t('sections.review.title')}
+            subtitle={t('sections.review.subtitle')}
           >
             <div className="mb-6 space-y-3">
               <ReviewBlock
-                title="ข้อมูลผู้ขอความช่วยเหลือ"
+                title={t('review.profile')}
                 icon={<User className="h-4 w-4 text-gray-600" />}
                 items={[
                   { label: formData.name },
@@ -462,7 +463,7 @@ export function HelpRequestForm() {
               />
 
               <ReviewBlock
-                title="ที่อยู่"
+                title={t('review.address')}
                 icon={<MapPin className="h-4 w-4 text-gray-600" />}
                 items={[
                   { label: formData.location },
@@ -474,7 +475,7 @@ export function HelpRequestForm() {
                 <div className="mb-3 flex items-center gap-2">
                   <Package className="h-4 w-4 text-gray-600" />
                   <div className="text-xs text-gray-600">
-                    ความช่วยเหลือที่ต้องการ
+                    {t('review.needs')}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -483,7 +484,9 @@ export function HelpRequestForm() {
                       {
                         CATEGORY_OPTIONS.find(
                           c => c.value === formData.category
-                        )?.label
+                        )?.value
+                          ? t(`categories.${formData.category}`)
+                          : ''
                       }
                     </span>
                     <span
@@ -496,11 +499,7 @@ export function HelpRequestForm() {
                           : 'green'
                       )}
                     >
-                      {formData.urgency === 'high'
-                        ? 'เร่งด่วน'
-                        : formData.urgency === 'medium'
-                        ? 'ปานกลาง'
-                        : 'ไม่เร่งด่วน'}
+                      {t(`urgency.${formData.urgency}`)}
                     </span>
                   </div>
                   {formData.description && (
@@ -514,7 +513,7 @@ export function HelpRequestForm() {
               {formData.riskGroups.length > 0 && (
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                   <div className="mb-3 text-xs text-gray-600">
-                    กลุ่มเสี่ยงพิเศษ
+                    {t('review.risks')}
                   </div>
                   <div className="space-y-3">
                     {formData.riskGroups.map(value => {
@@ -529,7 +528,7 @@ export function HelpRequestForm() {
                           <div className="mb-1 flex items-center gap-2">
                             <Icon className="h-4 w-4 text-gray-700" />
                             <span className="text-sm text-gray-900">
-                              {group?.label}
+                              {group ? t(`risk.labels.${group.value}`) : value}
                             </span>
                           </div>
                           {detail && (
@@ -547,7 +546,7 @@ export function HelpRequestForm() {
               {formData.specialNeeds && (
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                   <div className="mb-2 text-xs text-gray-600">
-                    ความต้องการพิเศษ
+                    {t('review.specialNeeds')}
                   </div>
                   <div className="text-sm text-gray-900">
                     {formData.specialNeeds}
@@ -556,13 +555,13 @@ export function HelpRequestForm() {
               )}
             </div>
 
-            <Field label="เพิ่มความต้องการพิเศษ (ถ้ามี)">
+            <Field label={t('fields.specialNeeds')}>
               <textarea
                 value={formData.specialNeeds}
                 onChange={e => setField('specialNeeds', e.target.value)}
                 rows={3}
                 className={cn(INPUT_CLASS, 'resize-none text-sm')}
-                placeholder="เช่น ไม่สามารถขึ้นบันไดได้, ต้องการอาหารอ่อน, แพ้อาหารทะเล"
+                placeholder={t('fields.specialNeedsPlaceholder')}
               />
             </Field>
 
@@ -571,11 +570,10 @@ export function HelpRequestForm() {
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div className="text-sm text-gray-700">
                   <p className="mb-1 text-gray-900">
-                    ก่อนส่งคำขอ กรุณาตรวจสอบข้อมูล
+                    {t('review.alertTitle')}
                   </p>
                   <p className="text-xs text-gray-600">
-                    เราจะติดต่อกลับโดยเร็วที่สุด กรณีเร่งด่วนกรุณาโทร 191 หรือ
-                    1669
+                    {t('review.alertSubtitle')}
                   </p>
                 </div>
               </div>
@@ -591,7 +589,7 @@ export function HelpRequestForm() {
               className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>ย้อนกลับ</span>
+              <span>{t('buttons.back')}</span>
             </button>
           )}
 
@@ -607,7 +605,7 @@ export function HelpRequestForm() {
                   : 'cursor-not-allowed bg-gray-200 text-gray-400'
               )}
             >
-              <span>ถัดไป</span>
+              <span>{t('buttons.next')}</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
@@ -616,7 +614,7 @@ export function HelpRequestForm() {
               className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-sm transition-colors hover:bg-[#e14a21]"
             >
               <CheckCircle2 className="h-5 w-5" />
-              <span>ส่งคำขอความช่วยเหลือ</span>
+              <span>{t('buttons.submit')}</span>
             </button>
           )}
         </div>
@@ -670,18 +668,25 @@ function Field({
 }
 
 function UrgencyButton({
+  active,
   onClick,
   icon,
   label,
   className,
 }: {
+  active?: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
   className: string;
 }) {
   return (
-    <button type="button" onClick={onClick} className={className}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={className}
+      aria-pressed={active}
+    >
       <div className="mx-auto mb-1 flex w-max flex-col items-center">
         {icon}
         <div className="text-xs text-gray-900">{label}</div>

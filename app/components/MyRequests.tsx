@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   AlertOctagon,
   MapPin,
@@ -10,15 +11,10 @@ import {
 } from 'lucide-react';
 import type { HelpRequest } from '@/app/types';
 
-const categoryLabels: Record<string, string> = {
-  'food-water': 'อาหาร-น้ำดื่ม',
-  medical: 'การแพทย์',
-  shelter: 'ที่พักพิง',
-  rescue: 'ช่วยเหลือฉุกเฉิน',
-  other: 'อื่นๆ',
-};
-
 export function MyRequests() {
+  const t = useTranslations('home.myRequests');
+  const tCommon = useTranslations('home.common');
+  const locale = useLocale();
   const initialPhone =
     typeof window !== 'undefined' ? localStorage.getItem('userPhone') || '' : '';
   const getRequestsByPhone = (phone: string) => {
@@ -35,6 +31,18 @@ export function MyRequests() {
   const [userPhone, setUserPhone] = useState(initialPhone);
   const [showPhoneInput, setShowPhoneInput] = useState(!initialPhone);
 
+  const getCategoryLabel = (category: string) =>
+    tCommon(`categories.${category}`, { fallback: category });
+
+  const formatDate = (dateString: string) =>
+    new Intl.DateTimeFormat(locale === 'th' ? 'th-TH' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(new Date(dateString));
+
   const loadRequests = (phone: string) => {
     setRequests(getRequestsByPhone(phone));
   };
@@ -48,23 +56,27 @@ export function MyRequests() {
   };
 
   const handleShare = (request: HelpRequest) => {
-    const text = `ขอความช่วยเหลือ: ${
-      categoryLabels[request.category] || request.category
-    }\nสถานที่: ${request.location}\nติดต่อ: ${request.phone}`;
+    const category = getCategoryLabel(request.category);
+    const text = t('shareTemplate', {
+      category,
+      location: request.location,
+      phone: request.phone,
+    });
+    const title = t('shareTitle');
 
     if (navigator.share) {
       navigator.share({
-        title: 'คำขอความช่วยเหลือ',
-        text: text,
+        title,
+        text,
       });
     } else {
       navigator.clipboard.writeText(text);
-      alert('คัดลอกข้อมูลแล้ว');
+      alert(t('copyAlert'));
     }
   };
 
   const handleDelete = (id: string) => {
-    if (confirm('ต้องการยกเลิกคำขอนี้หรือไม่?')) {
+    if (confirm(t('confirmDelete'))) {
       const stored = localStorage.getItem('helpRequests');
       if (stored) {
         const allRequests = JSON.parse(stored);
@@ -79,19 +91,19 @@ export function MyRequests() {
     if (status === 'completed') {
       return (
         <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs bg-green-100 text-green-700">
-          สำเร็จ
+          {tCommon('status.completed')}
         </span>
       );
-    } else if (status === 'processing') {
+    } else if (status === 'in-progress') {
       return (
         <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs bg-blue-100 text-blue-700">
-          กำลังดำเนินการ
+          {tCommon('status.in-progress')}
         </span>
       );
     }
     return (
       <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs bg-orange-100 text-orange-700">
-        รอดำเนินการ
+        {tCommon('status.pending')}
       </span>
     );
   };
@@ -100,32 +112,21 @@ export function MyRequests() {
     if (urgency === 'high') {
       return (
         <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs bg-red-100 text-red-700">
-          เร่งด่วน
+          {tCommon('urgency.high')}
         </span>
       );
     } else if (urgency === 'medium') {
       return (
         <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs bg-orange-100 text-orange-700">
-          ปานกลาง
+          {tCommon('urgency.medium')}
         </span>
       );
     }
     return (
       <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 rounded text-[10px] sm:text-xs bg-green-100 text-green-700">
-        ไม่เร่งด่วน
+        {tCommon('urgency.low')}
       </span>
     );
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   if (showPhoneInput) {
@@ -137,29 +138,29 @@ export function MyRequests() {
               <AlertOctagon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             </div>
             <div>
-              <h2 className="text-gray-900">คำขอของฉัน</h2>
+              <h2 className="text-gray-900">{t('title')}</h2>
               <p className="text-xs sm:text-sm text-gray-500">
-                ตรวจสอบคำขอความช่วยเหลือของคุณ
+                {t('subtitle')}
               </p>
             </div>
           </div>
 
           <div className="bg-gray-50 rounded-lg p-4 sm:p-6 border border-gray-200 text-center">
             <p className="text-sm sm:text-base text-gray-700 mb-4">
-              กรุณากรอกเบอร์โทรศัพท์เพื่อดูคำขอของคุณ
+              {t('enterPhone')}
             </p>
             <input
               type="tel"
               value={userPhone}
               onChange={e => setUserPhone(e.target.value)}
-              placeholder="0XX-XXX-XXXX"
+              placeholder={t('phonePlaceholder')}
               className="w-full max-w-xs mx-auto px-4 py-2.5 sm:py-3 rounded-lg border-2 border-gray-200 focus:border-primary focus:outline-none text-center mb-3"
             />
             <button
               onClick={handlePhoneSubmit}
               className="w-full max-w-xs px-6 py-2.5 sm:py-3 rounded-lg bg-primary hover:bg-[#e14a21] text-white transition-colors text-sm sm:text-base"
             >
-              ดูคำขอของฉัน
+              {t('viewButton')}
             </button>
           </div>
         </div>
@@ -171,39 +172,39 @@ export function MyRequests() {
     <div className="space-y-4 sm:space-y-6">
       <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="bg-primary/10 p-2 sm:p-2.5 rounded-lg">
-              <AlertOctagon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="bg-primary/10 p-2 sm:p-2.5 rounded-lg">
+                <AlertOctagon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-gray-900">{t('title')}</h2>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  {t('total', { count: requests.length })}
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-gray-900">คำขอของฉัน</h2>
-              <p className="text-xs sm:text-sm text-gray-500">
-                {requests.length} คำขอทั้งหมด
-              </p>
-            </div>
+            <button
+              onClick={() => {
+                localStorage.removeItem('userPhone');
+                setUserPhone('');
+                setShowPhoneInput(true);
+                setRequests([]);
+              }}
+              className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              {t('changeNumber')}
+            </button>
           </div>
-          <button
-            onClick={() => {
-              localStorage.removeItem('userPhone');
-              setUserPhone('');
-              setShowPhoneInput(true);
-              setRequests([]);
-            }}
-            className="text-xs sm:text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            เปลี่ยนเบอร์
-          </button>
         </div>
-      </div>
 
       {requests.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg p-8 sm:p-12 text-center">
           <AlertOctagon className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-2 sm:mb-3" />
           <p className="text-sm sm:text-base text-gray-500">
-            ยังไม่มีคำขอความช่วยเหลือ
+            {t('emptyTitle')}
           </p>
           <p className="text-xs sm:text-sm text-gray-400 mt-1">
-            คำขอที่คุณส่งจะแสดงที่นี่
+            {t('emptySubtitle')}
           </p>
         </div>
       ) : (
@@ -217,7 +218,7 @@ export function MyRequests() {
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                   <h3 className="text-sm sm:text-base text-gray-900">
-                    {categoryLabels[request.category] || request.category}
+                    {getCategoryLabel(request.category)}
                   </h3>
                 </div>
                 <div className="flex items-center gap-1.5 sm:gap-2">
@@ -248,14 +249,14 @@ export function MyRequests() {
                   className="flex-1 flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg bg-primary hover:bg-[#e14a21] text-white transition-colors text-xs sm:text-sm"
                 >
                   <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>โทร</span>
+                  <span>{t('actions.call')}</span>
                 </a>
                 <button
                   onClick={() => handleShare(request)}
                   className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-lg border border-gray-300 hover:border-gray-400 text-gray-700 transition-colors text-xs sm:text-sm"
                 >
                   <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                  <span>แชร์</span>
+                  <span>{t('actions.share')}</span>
                 </button>
                 <button
                   onClick={() => handleDelete(request.id)}
