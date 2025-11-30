@@ -31,7 +31,7 @@ export function HomeHeader({ title }: HomeHeaderProps) {
                 {title}
               </span>
               <div className="flex items-center justify-start gap-2 lg:justify-start">
-                <div className="inline-flex items-center gap-2 rounded-full border-2 border-green-200 bg-green-100 px-1 md:px-2 py-1 md:py-2">
+                <div className="inline-flex items-center gap-2 rounded-full border md:border-2 border-green-200 bg-green-100 px-1 md:px-2 py-1 md:py-2">
                   <div className="relative">
                     <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
                     <div className="absolute inset-0 h-2 w-2 animate-ping rounded-full bg-green-400" />

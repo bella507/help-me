@@ -20,9 +20,9 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
     onRequest();
   };
   const stats = [
-    { value: '24/7', label: 'เปิดบริการ' },
+    { value: '24/7', label: 'ให้บริการ' },
     { value: 'ฟรี', label: 'ไม่มีค่าใช้จ่าย' },
-    { value: '<5', label: 'นาที ตอบรับ' },
+    // { value: 'รวดเร็ว', label: 'ตอบรับทันที' },
   ];
   const numbers: Array<{
     number: string;
@@ -51,22 +51,56 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
   ];
 
   return (
-    <div className="relative overflow-hidden border-b-2 border-gray-100 bg-linear-to-br from-gray-50 via-white to-orange-50">
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 2px 2px, #f9572b 1px, transparent 0)`,
-          backgroundSize: '32px 32px',
-        }}
-      />
+    <div className="relative overflow-hidden border-b-2 bg-linear-to-br from-orange-50 via-white to-orange-100">
+      {/* Animated Ocean Waves */}
+      <div className="absolute inset-0 opacity-50">
+        <svg
+          className="absolute bottom-0 w-full h-24 sm:h-32 md:h-40 lg:h-48"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="#fb923c"
+            fillOpacity="0.8"
+            d="M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,165.3C672,139,768,117,864,122.7C960,128,1056,160,1152,154.7C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          >
+            <animate
+              attributeName="d"
+              dur="10s"
+              repeatCount="indefinite"
+              values="
+                M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,165.3C672,139,768,117,864,122.7C960,128,1056,160,1152,154.7C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+                M0,96L48,112C96,128,192,160,288,165.3C384,171,480,149,576,133.3C672,117,768,107,864,122.7C960,139,1056,181,1152,186.7C1248,192,1344,160,1392,144L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+                M0,160L48,176C96,192,192,224,288,224C384,224,480,192,576,165.3C672,139,768,117,864,122.7C960,128,1056,160,1152,154.7C1248,149,1344,107,1392,85.3L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z
+              "
+            />
+          </path>
+          <path
+            fill="#f97316"
+            fillOpacity="0.7"
+            d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,154.7C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          >
+            <animate
+              attributeName="d"
+              dur="8s"
+              repeatCount="indefinite"
+              values="
+                M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,154.7C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+                M0,192L48,181.3C96,171,192,149,288,144C384,139,480,149,576,165.3C672,181,768,203,864,202.7C960,203,1056,181,1152,160C1248,139,1344,117,1392,106.7L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z;
+                M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,208C960,192,1056,160,1152,154.7C1248,149,1344,171,1392,181.3L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z
+              "
+            />
+          </path>
+        </svg>
+      </div>
 
-      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
+      <div className="relative mx-auto max-w-7xl px-4 pb-20 py-8 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <div className="space-y-6 text-center lg:text-left">
             <div className="space-y-3">
               <h1
                 className={cn(
-                  'text-3xl sm:text-4xl lg:text-5xl leading-tight',
+                  'text-2xl sm:text-4xl lg:text-5xl leading-tight',
                   darkMode ? 'text-gray-100' : 'text-gray-900'
                 )}
               >
@@ -74,7 +108,7 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
               </h1>
               <p
                 className={cn(
-                  'text-lg sm:text-xl',
+                  'text-md md:text-lg',
                   darkMode ? 'text-gray-400' : 'text-gray-600'
                 )}
               >
