@@ -8,6 +8,8 @@ export interface HelpRequest {
   phone: string;
   location: string;
   address?: string;
+  latitude?: number;
+  longitude?: number;
   category: string;
   urgency: 'high' | 'medium' | 'low';
   description: string;

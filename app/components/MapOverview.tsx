@@ -58,6 +58,30 @@ export function MapOverview() {
     const sync = () => {
       const data = requestStorage.getAll();
       const withCoords = data.map(req => {
+        // ถ้ามี latitude/longitude ใช้พิกัดจริง
+        if (req.latitude && req.longitude) {
+          // แปลง lat/lng เป็น x,y บนแผนที่
+          // พื้นที่กรุงเทพและปริมณฑล: lat 13.7-14.0, lng 100.3-100.7
+          const lat = req.latitude;
+          const lng = req.longitude;
+
+          // แปลง latitude (13.7-14.0) เป็น y (0-100)
+          // ใช้ค่ากลับเพราะ latitude สูง = y ต่ำบนแผนที่
+          const y = ((14.0 - lat) / 0.3) * 100;
+
+          // แปลง longitude (100.3-100.7) เป็น x (0-100)
+          const x = ((lng - 100.3) / 0.4) * 100;
+
+          return {
+            ...req,
+            coordinates: {
+              x: Math.max(0, Math.min(100, x)),
+              y: Math.max(0, Math.min(100, y)),
+            },
+          };
+        }
+
+        // ถ้าไม่มีพิกัด ใช้วิธีเดิม
         const key = Object.keys(COORDINATES).find(k =>
           req.location.includes(k)
         );

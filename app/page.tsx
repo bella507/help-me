@@ -25,7 +25,7 @@ import { DonationsList } from './components/DonationsList';
 import { EmergencyContacts } from './components/EmergencyContacts';
 import { FAQ } from './components/FAQ';
 import { HelpRequestModal } from './components/HelpRequestModal';
-import { MapOverview } from './components/MapOverview';
+import { RealMapOverview } from './components/RealMapOverview';
 import { MyRequests } from './components/MyRequests';
 import { NewsFeed } from './components/NewsFeed';
 import { PreparationGuide } from './components/PreparationGuide';
@@ -227,7 +227,9 @@ function AppContent({
         darkMode={darkMode}
         onRequest={() => setShowHelpModal(true)}
       />
-
+      <main className="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 sm:pb-24 sm:pt-6 lg:px-8">
+        <RealMapOverview />
+      </main>
       {/* <TabNavigation
         tabs={mainTabs}
         activeTab={activeTab}
