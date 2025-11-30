@@ -1,5 +1,7 @@
+'use client';
+
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
 import {
   User,
   Phone as PhoneIcon,
@@ -29,6 +31,80 @@ import { toast } from 'sonner';
 import { cn, generateId, requestStorage } from '@/app/lib/utils';
 import type { HelpRequest } from '@/app/types';
 import { useShareLocation } from '@/app/hooks';
+
+const TEXT = {
+  stepLabel: (step: number, total: number) => `ขั้นตอนที่ ${step} จาก ${total}`,
+  sections: {
+    profile: { title: 'ข้อมูลผู้ขอความช่วยเหลือ', subtitle: 'ชื่อและเบอร์ติดต่อของคุณ' },
+    location: { title: 'ที่อยู่ของคุณ', subtitle: 'เพื่อให้เราไปช่วยเหลือคุณได้' },
+    needs: { title: 'ต้องการความช่วยเหลืออะไร', subtitle: 'เลือกได้ 1 อย่าง' },
+    risk: { title: 'กลุ่มเสี่ยงพิเศษ', subtitle: 'เลือกได้หลายอย่าง (ถ้ามี)' },
+    review: { title: 'ตรวจสอบข้อมูลก่อนส่ง', subtitle: 'กรุณาตรวจสอบความถูกต้อง' },
+  },
+  fields: {
+    name: 'ชื่อ-นามสกุล',
+    namePlaceholder: 'กรอกชื่อ-นามสกุล',
+    phone: 'เบอร์โทรศัพท์',
+    phonePlaceholder: '0xx-xxx-xxxx',
+    location: 'จังหวัด/อำเภอ',
+    locationPlaceholder: 'เช่น กรุงเทพมหานคร, เขตบางกอกน้อย',
+    address: 'ที่อยู่โดยละเอียด (ถ้ามี)',
+    addressPlaceholder: 'บ้านเลขที่ ถนน ตำบล',
+    description: 'อธิบายสถานการณ์ (ถ้ามี)',
+    descriptionPlaceholder: 'เช่น บ้านท่วมน้ำสูง 1 เมตร ต้องการอาหารและน้ำดื่ม',
+    specialNeeds: 'เพิ่มความต้องการพิเศษ (ถ้ามี)',
+    specialNeedsPlaceholder: 'เช่น ไม่สามารถขึ้นบันไดได้, ต้องการอาหารอ่อน, แพ้อาหารทะเล',
+  },
+  categories: {
+    food: 'อาหาร/น้ำ',
+    shelter: 'ที่พักพิง',
+    medical: 'พยาบาล',
+    clothing: 'เสื้อผ้า',
+    evacuation: 'อพยพ',
+    other: 'อื่นๆ',
+  },
+  urgency: {
+    label: 'ระดับความเร่งด่วน',
+    low: 'ไม่เร่งด่วน',
+    medium: 'ปานกลาง',
+    high: 'เร่งด่วน',
+  },
+  risk: {
+    labels: {
+      elderly: 'ผู้สูงอายุ (60 ปีขึ้นไป)',
+      children: 'เด็กเล็ก (ต่ำกว่า 5 ปี)',
+      disabled: 'ผู้พิการ/ผู้ป่วยติดเตียง',
+      pregnant: 'หญิงมีครรภ์',
+      pets: 'สัตว์เลี้ยง',
+      medical: 'ต้องการยาหรืออุปกรณ์ทางการแพทย์',
+    },
+    placeholders: {
+      elderly: 'เช่น 2 คน, เคลื่อนไหวได้บ้าง, มีโรคเบาหวาน',
+      children: 'เช่น 1 คน, อายุ 3 ขวบ',
+      disabled: 'เช่น 1 คน, ใช้รถเข็น, ต้องการอุปกรณ์ช่วยเหลือ',
+      pregnant: 'เช่น ตั้งครรภ์ 7 เดือน',
+      pets: 'เช่น สุนัข 2 ตัว (ขนาดใหญ่) แมว 1 ตัว',
+      medical: 'เช่น ยาความดันโลหิตสูง, เครื่องวัดน้ำตาล, ออกซิเจน',
+    },
+    emptyHint: 'หากไม่มีกลุ่มเสี่ยงพิเศษ กดถัดไปได้เลย',
+  },
+  review: {
+    profile: 'ข้อมูลผู้ขอความช่วยเหลือ',
+    address: 'ที่อยู่',
+    needs: 'ความช่วยเหลือที่ต้องการ',
+    risks: 'กลุ่มเสี่ยงพิเศษ',
+    specialNeeds: 'ความต้องการพิเศษ',
+    alertTitle: 'ก่อนส่งคำขอ กรุณาตรวจสอบข้อมูล',
+    alertSubtitle:
+      'เราจะติดต่อกลับโดยเร็วที่สุด กรณีเร่งด่วนกรุณาโทร 191 หรือ 1669',
+  },
+  buttons: {
+    back: 'ย้อนกลับ',
+    next: 'ถัดไป',
+    submit: 'ส่งคำขอความช่วยเหลือ',
+  },
+  toastSuccess: 'ส่งคำขอความช่วยเหลือเรียบร้อยแล้ว',
+};
 
 type FormData = {
   name: string;
@@ -87,7 +163,7 @@ type HelpRequestFormProps = {
 };
 
 export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
-  const t = useTranslations('home.requestForm');
+  const { data: session } = useSession();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const { getCurrentLocation, isLoading: isLoadingLocation } =
@@ -162,10 +238,12 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
       createdAt: new Date().toISOString(),
       notes: formData.specialNeeds,
       assignedTo: undefined,
+      userEmail: session?.user?.email || undefined,
+      userId: session?.user?.id || undefined,
     };
 
     requestStorage.add(newRequest);
-    toast.success(t('toastSuccess'));
+    toast.success(TEXT.toastSuccess);
     setFormData(EMPTY_FORM);
     setStep(1);
     onSuccess?.();
@@ -188,7 +266,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm text-gray-600">
-            {t('stepLabel', { step, total: TOTAL_STEPS })}
+            {TEXT.stepLabel(step, TOTAL_STEPS)}
           </span>
           <span className="text-sm text-gray-600">{progress}%</span>
         </div>
@@ -204,21 +282,21 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
         {step === 1 && (
           <Section
             icon={<User className="h-5 w-5 text-gray-700" />}
-            title={t('sections.profile.title')}
-            subtitle={t('sections.profile.subtitle')}
+            title={TEXT.sections.profile.title}
+            subtitle={TEXT.sections.profile.subtitle}
           >
             <div className="space-y-4">
-              <Field label={t('fields.name')} required>
+              <Field label={TEXT.fields.name} required>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={e => setField('name', e.target.value)}
                   className={INPUT_CLASS}
-                  placeholder={t('fields.namePlaceholder')}
+                  placeholder={TEXT.fields.namePlaceholder}
                 />
               </Field>
 
-              <Field label={t('fields.phone')} required>
+              <Field label={TEXT.fields.phone} required>
                 <input
                   type="tel"
                   value={formData.phone}
@@ -247,8 +325,8 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
         {step === 2 && (
           <Section
             icon={<MapPin className="h-5 w-5 text-gray-700" />}
-            title={t('sections.location.title')}
-            subtitle={t('sections.location.subtitle')}
+            title={TEXT.sections.location.title}
+            subtitle={TEXT.sections.location.subtitle}
           >
             <div className="space-y-4">
               <Field label="ที่อยู่ของคุณ" required>
@@ -316,13 +394,13 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                 </div>
               </Field>
 
-              {/* <Field label={t('fields.address')}>
+              {/* <Field label={TEXT.fields.address}>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={e => setField('address', e.target.value)}
                   className={INPUT_CLASS}
-                  placeholder={t('fields.addressPlaceholder')}
+                  placeholder={TEXT.fields.addressPlaceholder}
                 />
               </Field> */}
             </div>
@@ -332,14 +410,15 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
         {step === 3 && (
           <Section
             icon={<Package className="h-5 w-5 text-gray-700" />}
-            title={t('sections.needs.title')}
-            subtitle={t('sections.needs.subtitle')}
+            title={TEXT.sections.needs.title}
+            subtitle={TEXT.sections.needs.subtitle}
           >
             <div className="mb-6 grid grid-cols-2 gap-3">
               {CATEGORY_OPTIONS.map(cat => {
                 const Icon = cat.icon;
                 const active = formData.category === cat.value;
-                const label = t(`categories.${cat.value}`);
+                const label =
+                  TEXT.categories[cat.value as keyof typeof TEXT.categories];
                 return (
                   <button
                     key={cat.value}
@@ -371,7 +450,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               })}
             </div>
 
-            <Field label={t('urgency.label')} required>
+            <Field label={TEXT.urgency.label} required>
               <div className="grid grid-cols-3 gap-3">
                 <UrgencyButton
                   active={formData.urgency === 'low'}
@@ -386,7 +465,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                       )}
                     />
                   }
-                  label={t('urgency.low')}
+                  label={TEXT.urgency.low}
                   className={cn(
                     'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'low'
@@ -407,7 +486,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                       )}
                     />
                   }
-                  label={t('urgency.medium')}
+                  label={TEXT.urgency.medium}
                   className={cn(
                     'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'medium'
@@ -428,7 +507,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                       )}
                     />
                   }
-                  label={t('urgency.high')}
+                  label={TEXT.urgency.high}
                   className={cn(
                     'rounded-lg border-2 p-4 transition-all',
                     formData.urgency === 'high'
@@ -439,13 +518,13 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               </div>
             </Field>
 
-            <Field label={t('fields.description')}>
+            <Field label={TEXT.fields.description}>
               <textarea
                 value={formData.description}
                 onChange={e => setField('description', e.target.value)}
                 rows={3}
                 className={cn(INPUT_CLASS, 'resize-none')}
-                placeholder={t('fields.descriptionPlaceholder')}
+                placeholder={TEXT.fields.descriptionPlaceholder}
               />
             </Field>
           </Section>
@@ -454,20 +533,20 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
         {step === 4 && (
           <Section
             icon={<Users className="h-5 w-5 text-gray-700" />}
-            title={t('sections.risk.title')}
-            subtitle={t('sections.risk.subtitle')}
+            title={TEXT.sections.risk.title}
+            subtitle={TEXT.sections.risk.subtitle}
           >
             <div className="mb-4 space-y-3">
               {RISK_OPTIONS.map(group => {
                 const Icon = group.icon;
                 const isSelected = formData.riskGroups.includes(group.value);
                 const placeholderMap: Record<string, string> = {
-                  elderly: t('risk.placeholders.elderly'),
-                  children: t('risk.placeholders.children'),
-                  disabled: t('risk.placeholders.disabled'),
-                  pregnant: t('risk.placeholders.pregnant'),
-                  pets: t('risk.placeholders.pets'),
-                  medical: t('risk.placeholders.medical'),
+                  elderly: TEXT.risk.placeholders.elderly,
+                  children: TEXT.risk.placeholders.children,
+                  disabled: TEXT.risk.placeholders.disabled,
+                  pregnant: TEXT.risk.placeholders.pregnant,
+                  pets: TEXT.risk.placeholders.pets,
+                  medical: TEXT.risk.placeholders.medical,
                 };
 
                 return (
@@ -495,7 +574,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                             isSelected ? 'text-gray-900' : 'text-gray-600'
                           )}
                         >
-                          {t(`risk.labels.${group.value}`)}
+                          {TEXT.risk.labels[group.value as keyof typeof TEXT.risk.labels]}
                         </span>
                         <div
                           className={cn(
@@ -532,7 +611,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
 
             {formData.riskGroups.length === 0 && (
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-center">
-                <p className="text-sm text-gray-600">{t('risk.emptyHint')}</p>
+                <p className="text-sm text-gray-600">{TEXT.risk.emptyHint}</p>
               </div>
             )}
           </Section>
@@ -541,12 +620,12 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
         {step === 5 && (
           <Section
             icon={<CheckCircle2 className="h-5 w-5 text-primary" />}
-            title={t('sections.review.title')}
-            subtitle={t('sections.review.subtitle')}
+            title={TEXT.sections.review.title}
+            subtitle={TEXT.sections.review.subtitle}
           >
             <div className="mb-6 space-y-3">
               <ReviewBlock
-                title={t('review.profile')}
+                title={TEXT.review.profile}
                 icon={<User className="h-4 w-4 text-gray-600" />}
                 items={[
                   { label: formData.name },
@@ -558,7 +637,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               />
 
               <ReviewBlock
-                title={t('review.address')}
+                title={TEXT.review.address}
                 icon={<MapPin className="h-4 w-4 text-gray-600" />}
                 items={[
                   { label: formData.location },
@@ -570,7 +649,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                 <div className="mb-3 flex items-center gap-2">
                   <Package className="h-4 w-4 text-gray-600" />
                   <div className="text-xs text-gray-600">
-                    {t('review.needs')}
+                    {TEXT.review.needs}
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -578,7 +657,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                     <span className="text-gray-900">
                       {CATEGORY_OPTIONS.find(c => c.value === formData.category)
                         ?.value
-                        ? t(`categories.${formData.category}`)
+                        ? TEXT.categories[formData.category as keyof typeof TEXT.categories]
                         : ''}
                     </span>
                     <span
@@ -591,7 +670,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                           : 'green'
                       )}
                     >
-                      {t(`urgency.${formData.urgency}`)}
+                      {TEXT.urgency[formData.urgency as keyof typeof TEXT.urgency]}
                     </span>
                   </div>
                   {formData.description && (
@@ -605,7 +684,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               {formData.riskGroups.length > 0 && (
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                   <div className="mb-3 text-xs text-gray-600">
-                    {t('review.risks')}
+                    {TEXT.review.risks}
                   </div>
                   <div className="space-y-3">
                     {formData.riskGroups.map(value => {
@@ -620,7 +699,9 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                           <div className="mb-1 flex items-center gap-2">
                             <Icon className="h-4 w-4 text-gray-700" />
                             <span className="text-sm text-gray-900">
-                              {group ? t(`risk.labels.${group.value}`) : value}
+                              {group
+                                ? TEXT.risk.labels[group.value as keyof typeof TEXT.risk.labels]
+                                : value}
                             </span>
                           </div>
                           {detail && (
@@ -638,7 +719,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               {formData.specialNeeds && (
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
                   <div className="mb-2 text-xs text-gray-600">
-                    {t('review.specialNeeds')}
+                    {TEXT.review.specialNeeds}
                   </div>
                   <div className="text-sm text-gray-900">
                     {formData.specialNeeds}
@@ -647,13 +728,13 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               )}
             </div>
 
-            <Field label={t('fields.specialNeeds')}>
+            <Field label={TEXT.fields.specialNeeds}>
               <textarea
                 value={formData.specialNeeds}
                 onChange={e => setField('specialNeeds', e.target.value)}
                 rows={3}
                 className={cn(INPUT_CLASS, 'resize-none text-sm')}
-                placeholder={t('fields.specialNeedsPlaceholder')}
+                placeholder={TEXT.fields.specialNeedsPlaceholder}
               />
             </Field>
 
@@ -661,9 +742,9 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               <div className="flex gap-3">
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div className="text-sm text-gray-700">
-                  <p className="mb-1 text-gray-900">{t('review.alertTitle')}</p>
+                  <p className="mb-1 text-gray-900">{TEXT.review.alertTitle}</p>
                   <p className="text-xs text-gray-600">
-                    {t('review.alertSubtitle')}
+                    {TEXT.review.alertSubtitle}
                   </p>
                 </div>
               </div>
@@ -679,7 +760,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
             >
               <ArrowLeft className="h-4 w-4" />
-              <span>{t('buttons.back')}</span>
+              <span>{TEXT.buttons.back}</span>
             </button>
           )}
 
@@ -695,7 +776,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
                   : 'cursor-not-allowed bg-gray-200 text-gray-400'
               )}
             >
-              <span>{t('buttons.next')}</span>
+              <span>{TEXT.buttons.next}</span>
               <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
@@ -704,7 +785,7 @@ export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
               className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-sm transition-colors hover:bg-[#e14a21]"
             >
               <CheckCircle2 className="h-5 w-5" />
-              <span>{t('buttons.submit')}</span>
+              <span>{TEXT.buttons.submit}</span>
             </button>
           )}
         </div>

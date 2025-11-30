@@ -5,7 +5,6 @@ import {
   type ChangeEvent,
   type ReactNode,
 } from 'react';
-import { useTranslations } from 'next-intl';
 import type { LucideIcon } from 'lucide-react';
 import {
   Shield,
@@ -149,17 +148,17 @@ const DEFAULT_VOLUNTEERS: Volunteer[] = [
   },
 ];
 
-const TABS: { id: AdminTab; icon: LucideIcon; labelKey: string }[] = [
-  { id: 'overview', icon: BarChart3, labelKey: 'tabs.overview' },
-  { id: 'requests', icon: AlertCircle, labelKey: 'tabs.requests' },
-  { id: 'volunteers', icon: Users, labelKey: 'tabs.volunteers' },
-  { id: 'news', icon: Newspaper, labelKey: 'tabs.news' },
-  { id: 'shelters', icon: Home, labelKey: 'tabs.shelters' },
-  { id: 'risks', icon: AlertTriangle, labelKey: 'tabs.risks' },
-  { id: 'donations', icon: Package, labelKey: 'tabs.donations' },
-  { id: 'faq', icon: FileText, labelKey: 'tabs.faq' },
-  { id: 'notifications', icon: Bell, labelKey: 'tabs.notifications' },
-  { id: 'settings', icon: Settings, labelKey: 'tabs.settings' },
+const TABS: { id: AdminTab; icon: LucideIcon; label: string }[] = [
+  { id: 'overview', icon: BarChart3, label: 'ภาพรวม' },
+  { id: 'requests', icon: AlertCircle, label: 'คำขอช่วยเหลือ' },
+  { id: 'volunteers', icon: Users, label: 'อาสาสมัคร' },
+  { id: 'news', icon: Newspaper, label: 'ข่าวสาร' },
+  { id: 'shelters', icon: Home, label: 'ศูนย์พักพิง' },
+  { id: 'risks', icon: AlertTriangle, label: 'พื้นที่เสี่ยง' },
+  { id: 'donations', icon: Package, label: 'ของบริจาค' },
+  { id: 'faq', icon: FileText, label: 'FAQ' },
+  { id: 'notifications', icon: Bell, label: 'แจ้งเตือน' },
+  { id: 'settings', icon: Settings, label: 'ตั้งค่า' },
 ];
 
 const getCategoryLabel = (category: string) =>
@@ -260,7 +259,6 @@ function ModalShell({
 }
 
 export function AdminDashboard() {
-  const t = useTranslations('home.admin');
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
@@ -681,31 +679,29 @@ export function AdminDashboard() {
     <div className="min-h-screen bg-gray-50">
       <header className="sticky top-0 z-50 bg-primary border-b border-[#e14a21]">
         <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-white/20 p-2">
-                <Shield className="h-5 w-5 text-white" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="rounded-lg bg-white/20 p-2">
+                  <Shield className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-base text-white sm:text-lg">
+                    ระบบจัดการผู้ดูแล
+                  </h1>
+                  <p className="text-xs text-white/80">Admin Dashboard</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-base text-white sm:text-lg">
-                  {t('title')}
-                </h1>
-                <p className="text-xs text-white/80">
-                  {t('subtitle')}
-                </p>
-              </div>
+              <Button
+                onClick={handleLogout}
+                variant="ghost"
+                className="bg-white/10 text-white hover:bg-white/20"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">ออกจากระบบ</span>
+              </Button>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="ghost"
-              className="bg-white/10 text-white hover:bg-white/20"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              <span className="hidden sm:inline">{t('actions.logout')}</span>
-            </Button>
           </div>
-        </div>
-      </header>
+        </header>
 
       <div className="sticky top-[57px] z-40 border-b border-gray-200 bg-white sm:top-[65px]">
         <div className="mx-auto max-w-7xl px-2 sm:px-4">
@@ -722,7 +718,7 @@ export function AdminDashboard() {
               >
                 <tab.icon className="h-4 w-4" />
                 <span className="whitespace-nowrap text-xs sm:text-sm">
-                  {t(tab.labelKey as Parameters<typeof t>[0])}
+                  {tab.label}
                 </span>
               </button>
             ))}

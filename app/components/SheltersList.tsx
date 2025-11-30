@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
 import {
   MapPin,
   Phone,
@@ -114,7 +113,6 @@ const facilityIcons: Record<
 };
 
 export function SheltersList() {
-  const t = useTranslations('home.sheltersList');
   const [selectedStatus, setSelectedStatus] = useState<ShelterStatus>('all');
 
   const filteredShelters = useMemo(
@@ -172,22 +170,24 @@ export function SheltersList() {
             <Bed className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-gray-900">{t('title')}</h2>
-            <p className="text-sm text-gray-500">{t('subtitle')}</p>
+            <h2 className="text-gray-900">ศูนย์พักพิง</h2>
+            <p className="text-sm text-gray-500">
+              รายการศูนย์พักพิงที่เปิดให้บริการ
+            </p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {filterButton('all', t('filters.all'), 'primary')}
-          {filterButton('available', t('filters.available'), 'green')}
-          {filterButton('limited', t('filters.limited'), 'orange')}
-          {filterButton('full', t('filters.full'), 'red')}
+          {filterButton('all', 'ทั้งหมด', 'primary')}
+          {filterButton('available', 'ว่าง', 'green')}
+          {filterButton('limited', 'ใกล้เต็ม', 'orange')}
+          {filterButton('full', 'เต็ม', 'red')}
         </div>
       </div>
 
       <div className="space-y-4">
         {filteredShelters.length === 0 ? (
-          <EmptyState message={t('noData')} />
+          <EmptyState message="ยังไม่มีศูนย์พักพิง" />
         ) : (
           filteredShelters.map(shelter => (
             <ShelterCard key={shelter.id} shelter={shelter} />
@@ -201,7 +201,6 @@ export function SheltersList() {
 }
 
 function ShelterCard({ shelter }: { shelter: Shelter }) {
-  const t = useTranslations('home.sheltersList');
   const occupancyPercent = Math.round(
     (shelter.occupied / shelter.capacity) * 100
   );
@@ -230,7 +229,7 @@ function ShelterCard({ shelter }: { shelter: Shelter }) {
       </div>
 
       <div className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
-        <div className="mb-1 text-xs text-gray-600">{t('addressLabel')}</div>
+        <div className="mb-1 text-xs text-gray-600">ที่อยู่</div>
         <div className="text-sm text-gray-900">{shelter.address}</div>
       </div>
 
@@ -238,13 +237,10 @@ function ShelterCard({ shelter }: { shelter: Shelter }) {
         <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm text-gray-700">
             <Users className="h-4 w-4" />
-            <span>{t('capacityLabel')}</span>
+            <span>ความจุ</span>
           </div>
           <span className="text-sm text-gray-900">
-            {t('occupancy', {
-              occupied: shelter.occupied,
-              capacity: shelter.capacity,
-            })}
+            {shelter.occupied}/{shelter.capacity} คน
           </span>
         </div>
         <div className="h-2 overflow-hidden rounded-full bg-gray-100">
@@ -290,7 +286,7 @@ function ShelterCard({ shelter }: { shelter: Shelter }) {
           className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm text-white transition-colors hover:bg-[#e14a21]"
         >
           <Phone className="h-4 w-4" />
-          <span>{t('callAction')}</span>
+          <span>โทร</span>
         </a>
       </div>
     </div>
@@ -307,14 +303,15 @@ function EmptyState({ message }: { message?: string }) {
 }
 
 function EmergencyNotice() {
-  const t = useTranslations('home.sheltersList');
   return (
     <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
       <div className="flex gap-3">
         <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <div className="text-sm text-gray-700">
-          <p className="mb-1 text-gray-900">{t('notice.title')}</p>
-          <p className="text-xs text-gray-600">{t('notice.body')}</p>
+          <p className="mb-1 text-gray-900">หมายเหตุ</p>
+          <p className="text-xs text-gray-600">
+            ข้อมูลอาจเปลี่ยนแปลงได้ กรุณาโทรสอบถามก่อนเดินทาง หรือในกรณีฉุกเฉินโทร 191 หรือ 1669
+          </p>
         </div>
       </div>
     </div>

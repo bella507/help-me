@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLocale, useTranslations, type TranslationValues } from 'next-intl';
 import {
   Clock,
   Search,
@@ -35,10 +34,19 @@ const URGENCY_ORDER: Record<HelpRequest['urgency'], number> = {
   low: 2,
 };
 
+const CATEGORY_NAMES: Record<string, string> = {
+  food: 'อาหารและน้ำดื่ม',
+  'food-water': 'อาหาร-น้ำดื่ม',
+  shelter: 'ที่พักพิง',
+  medical: 'การแพทย์',
+  clothing: 'เสื้อผ้า',
+  evacuation: 'การอพยพ',
+  transportation: 'ยานพาหนะ',
+  rescue: 'ช่วยเหลือฉุกเฉิน',
+  other: 'อื่นๆ',
+};
+
 export function RequestsList() {
-  const t = useTranslations('home.requests');
-  const tCommon = useTranslations('home.common');
-  const locale = useLocale();
   const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [searchPhone, setSearchPhone] = useState('');
   const [showRating, setShowRating] = useState<string | null>(null);
@@ -89,26 +97,18 @@ export function RequestsList() {
     const hour = 60 * minute;
     const day = 24 * hour;
     const week = 7 * day;
-    const rtf = new Intl.RelativeTimeFormat(
-      locale === 'th' ? 'th' : 'en',
-      { numeric: 'auto' }
-    );
+    const rtf = new Intl.RelativeTimeFormat('th', { numeric: 'auto' });
 
     if (diffMs < hour) return rtf.format(-Math.round(diffMs / minute), 'minute');
     if (diffMs < day) return rtf.format(-Math.round(diffMs / hour), 'hour');
     if (diffMs < week) return rtf.format(-Math.round(diffMs / day), 'day');
 
-    return new Intl.DateTimeFormat(locale === 'th' ? 'th-TH' : 'en-US', {
+    return new Intl.DateTimeFormat('th-TH', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     }).format(date);
   };
-
-  const translate = (key: string, values?: TranslationValues) =>
-    t(key as Parameters<typeof t>[0], values);
-  const translateCommon = (key: string, values?: TranslationValues) =>
-    tCommon(key as Parameters<typeof tCommon>[0], values);
 
   return (
     <div className="space-y-4">
@@ -116,7 +116,7 @@ export function RequestsList() {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatusCard
             active={filterStatus === 'all'}
-            label={tCommon('status.all')}
+            label="ทั้งหมด"
             count={stats.total}
             tone="gray"
             onClick={() => setFilterStatus('all')}
@@ -124,7 +124,7 @@ export function RequestsList() {
           />
           <StatusCard
             active={filterStatus === 'pending'}
-            label={tCommon('status.pending')}
+            label="รอดำเนินการ"
             count={stats.pending}
             tone="orange"
             onClick={() => setFilterStatus('pending')}
@@ -132,7 +132,7 @@ export function RequestsList() {
           />
           <StatusCard
             active={filterStatus === 'in-progress'}
-            label={tCommon('status.in-progress')}
+            label="กำลังดำเนินการ"
             count={stats.inProgress}
             tone="blue"
             onClick={() => setFilterStatus('in-progress')}
@@ -140,7 +140,7 @@ export function RequestsList() {
           />
           <StatusCard
             active={filterStatus === 'completed'}
-            label={tCommon('status.completed')}
+            label="เสร็จสิ้น"
             count={stats.completed}
             tone="green"
             onClick={() => setFilterStatus('completed')}
@@ -150,13 +150,15 @@ export function RequestsList() {
       )}
 
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-1 text-gray-900">{t('heading')}</h2>
-        <p className="mb-4 text-sm text-gray-600">{t('subheading')}</p>
+        <h2 className="mb-1 text-gray-900">ติดตามสถานะคำขอ</h2>
+        <p className="mb-4 text-sm text-gray-600">
+          ค้นหาด้วยเบอร์โทรศัพท์
+        </p>
         <div className="relative">
           <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           <input
             type="tel"
-            placeholder={t('searchPlaceholder')}
+            placeholder="0xx-xxx-xxxx"
             value={searchPhone}
             onChange={e => setSearchPhone(e.target.value)}
             className="w-full rounded-lg border border-gray-200 px-4 py-3 pl-12 outline-none transition-all placeholder:text-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20"
@@ -168,20 +170,19 @@ export function RequestsList() {
         <EmptyState
           searchPhone={searchPhone}
           filterStatus={filterStatus}
-          t={translate}
         />
       ) : (
         <>
           <div className="flex items-center justify-between px-2">
             <p className="text-sm text-gray-600">
-              {t('showing', { count: filteredRequests.length })}{' '}
+              แสดง {filteredRequests.length} รายการ{' '}
               {filterStatus !== 'all' && (
-                <span className="text-gray-500">{t('filteredHint')}</span>
+                <span className="text-gray-500">(กรองตามสถานะ)</span>
               )}
             </p>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-500">
-                {t('urgencyToggle')}
+                เรียงด่วนก่อน
               </span>
               <Toggle
                 on={sortByUrgency}
@@ -200,8 +201,6 @@ export function RequestsList() {
                   setExpandedId(expandedId === request.id ? null : request.id)
                 }
                 onShowRating={() => setShowRating(request.id)}
-                t={translate}
-                tCommon={translateCommon}
                 formatDate={formatDateLocalized}
               />
             ))}
@@ -306,25 +305,32 @@ function RequestCard({
   expanded,
   onToggle,
   onShowRating,
-  t,
-  tCommon,
   formatDate,
 }: {
   request: HelpRequest;
   expanded: boolean;
   onToggle: () => void;
   onShowRating: () => void;
-  t: (key: string, values?: TranslationValues) => string;
-  tCommon: (key: string, values?: TranslationValues) => string;
   formatDate: (dateString: string) => string;
 }) {
   const status = getStatusBadge(request.status);
   const urgency = getUrgencyBadge(request.urgency);
-  const statusText = tCommon(`status.${request.status}`);
-  const urgencyText = tCommon(`urgency.${request.urgency}`);
-  const categoryLabel = tCommon(`categories.${request.category}`, {
-    fallback: CATEGORY_LABELS[request.category] || request.category,
-  });
+  const statusTextMap: Record<HelpRequest['status'], string> = {
+    pending: 'รอดำเนินการ',
+    'in-progress': 'กำลังดำเนินการ',
+    completed: 'เสร็จสิ้น',
+  };
+  const urgencyTextMap: Record<HelpRequest['urgency'], string> = {
+    high: 'เร่งด่วน',
+    medium: 'ปานกลาง',
+    low: 'ไม่เร่งด่วน',
+  };
+  const statusText = statusTextMap[request.status];
+  const urgencyText = urgencyTextMap[request.urgency];
+  const categoryLabel =
+    CATEGORY_NAMES[request.category] ||
+    CATEGORY_LABELS[request.category] ||
+    request.category;
   const hasSpecialNeeds =
     request.specialNeeds && Object.values(request.specialNeeds).some(v => v);
 
@@ -378,17 +384,13 @@ function RequestCard({
                 {request.specialNeeds?.elderly && (
                   <IconChip
                     icon={<Users className="h-3.5 w-3.5 text-gray-600" />}
-                    title={t('riskCounts.elderly', {
-                      count: request.elderlyCount || 0,
-                    })}
+                    title={`ผู้สูงอายุ ${request.elderlyCount || 0} คน`}
                   />
                 )}
                 {request.specialNeeds?.children && (
                   <IconChip
                     icon={<Baby className="h-3.5 w-3.5 text-gray-600" />}
-                    title={t('riskCounts.children', {
-                      count: request.childrenCount || 0,
-                    })}
+                    title={`เด็ก ${request.childrenCount || 0} คน`}
                   />
                 )}
                 {request.specialNeeds?.disabled && (
@@ -396,15 +398,13 @@ function RequestCard({
                     icon={
                       <Accessibility className="h-3.5 w-3.5 text-gray-600" />
                     }
-                    title={t('riskCounts.disabled')}
+                    title="ผู้พิการ"
                   />
                 )}
                 {request.specialNeeds?.pregnant && (
                   <IconChip
                     icon={<Heart className="h-3.5 w-3.5 text-gray-600" />}
-                    title={t('riskCounts.pregnant', {
-                      count: request.pregnantCount || 0,
-                    })}
+                    title={`หญิงมีครรภ์ ${request.pregnantCount || 0} คน`}
                   />
                 )}
                 {request.specialNeeds?.pets && (
@@ -412,29 +412,25 @@ function RequestCard({
                     icon={<PawPrint className="h-3.5 w-3.5 text-gray-600" />}
                     title={
                       request.petsType ||
-                      t('riskCounts.pets', {
-                        count: request.petsCount || 1,
-                      })
+                      `สัตว์เลี้ยง ${request.petsCount || 1} ตัว`
                     }
                   />
                 )}
                 {request.specialNeeds?.medical && (
                   <IconChip
                     icon={<Pill className="h-3.5 w-3.5 text-gray-600" />}
-                    title={
-                      request.medicalNeeds || t('riskCounts.medical')
-                    }
+                    title={request.medicalNeeds || 'ต้องการยา/อุปกรณ์ทางการแพทย์'}
                   />
                 )}
               </div>
             )}
           </div>
 
-          <button
-            onClick={onToggle}
-            className="shrink-0 rounded p-1.5 transition-colors hover:bg-gray-100"
-            title={expanded ? t('toggle.hide') : t('toggle.show')}
-          >
+        <button
+          onClick={onToggle}
+          className="shrink-0 rounded p-1.5 transition-colors hover:bg-gray-100"
+          title={expanded ? 'ซ่อนรายละเอียด' : 'ดูรายละเอียด'}
+        >
             {expanded ? (
               <ChevronUp className="h-5 w-5 text-gray-600" />
             ) : (
@@ -448,7 +444,7 @@ function RequestCard({
             {request.description && (
               <div>
                 <div className="mb-1 text-xs text-gray-500">
-                  {t('noteTitle')}
+                  หมายเหตุ
                 </div>
                 <p className="text-sm text-gray-700 leading-relaxed">
                   {request.description}
@@ -459,37 +455,31 @@ function RequestCard({
             {hasSpecialNeeds && (
               <div>
                 <div className="mb-2 text-xs text-gray-500">
-                  {t('specialGroupTitle')}
+                  กลุ่มเสี่ยงพิเศษ
                 </div>
                 <div className="space-y-1.5 text-sm text-gray-700">
                   {request.specialNeeds?.elderly && request.elderlyCount && (
                     <DetailRow
                       icon={<Users className="h-4 w-4 text-gray-400" />}
-                      text={t('riskCounts.elderly', {
-                        count: request.elderlyCount,
-                      })}
+                      text={`ผู้สูงอายุ ${request.elderlyCount} คน`}
                     />
                   )}
                   {request.specialNeeds?.children && request.childrenCount && (
                     <DetailRow
                       icon={<Baby className="h-4 w-4 text-gray-400" />}
-                      text={t('riskCounts.children', {
-                        count: request.childrenCount,
-                      })}
+                      text={`เด็ก ${request.childrenCount} คน`}
                     />
                   )}
                   {request.specialNeeds?.disabled && (
                     <DetailRow
                       icon={<Accessibility className="h-4 w-4 text-gray-400" />}
-                      text={t('riskCounts.disabled')}
+                      text="ผู้พิการ"
                     />
                   )}
                   {request.specialNeeds?.pregnant && request.pregnantCount && (
                     <DetailRow
                       icon={<Heart className="h-4 w-4 text-gray-400" />}
-                      text={t('riskCounts.pregnant', {
-                        count: request.pregnantCount,
-                      })}
+                      text={`หญิงมีครรภ์ ${request.pregnantCount} คน`}
                     />
                   )}
                   {request.specialNeeds?.pets && (
@@ -497,9 +487,7 @@ function RequestCard({
                       icon={<PawPrint className="h-4 w-4 text-gray-400" />}
                       text={
                         request.petsType ||
-                        t('riskCounts.pets', {
-                          count: request.petsCount || 1,
-                        })
+                        `สัตว์เลี้ยง ${request.petsCount || 1} ตัว`
                       }
                     />
                   )}
@@ -507,7 +495,7 @@ function RequestCard({
                     <DetailRow
                       icon={<Pill className="h-4 w-4 text-gray-400" />}
                       text={
-                        request.medicalNeeds || t('riskCounts.medical')
+                        request.medicalNeeds || 'ต้องการยา/อุปกรณ์ทางการแพทย์'
                       }
                     />
                   )}
@@ -518,14 +506,14 @@ function RequestCard({
             {request.notes && (
               <NoteBlock
                 tone="yellow"
-                title={t('noteTitle')}
+                title="หมายเหตุ"
                 text={request.notes}
               />
             )}
             {request.volunteerNotes && (
               <NoteBlock
                 tone="green"
-                title={t('progressTitle')}
+                title="ความคืบหน้า"
                 text={request.volunteerNotes}
               />
             )}
@@ -536,7 +524,7 @@ function RequestCard({
                 className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-primary px-4 py-2 text-sm text-primary transition-colors hover:bg-primary/5"
               >
                 <Star className="h-4 w-4" />
-                <span>{t('ratingButton')}</span>
+                <span>ให้คะแนนความพึงพอใจ</span>
               </button>
             )}
           </div>
@@ -606,11 +594,9 @@ function NoteBlock({
 function EmptyState({
   searchPhone,
   filterStatus,
-  t,
 }: {
   searchPhone: string;
   filterStatus: StatusFilter;
-  t: (key: string) => string;
 }) {
   const messageKey =
     searchPhone.length > 0
@@ -624,9 +610,19 @@ function EmptyState({
       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-lg bg-gray-100">
         <Package className="h-8 w-8 text-gray-400" />
       </div>
-      <p className="mb-1 text-gray-900">{t(`empty.${messageKey}Title`)}</p>
+      <p className="mb-1 text-gray-900">
+        {messageKey === 'phone'
+          ? 'ไม่พบคำขอที่ตรงกับเบอร์โทรศัพท์'
+          : messageKey === 'status'
+          ? 'ไม่มีคำขอในสถานะนี้'
+          : 'ยังไม่มีคำขอความช่วยเหลือ'}
+      </p>
       <p className="text-sm text-gray-500">
-        {t(`empty.${messageKey}Subtitle`)}
+        {messageKey === 'phone'
+          ? 'ลองค้นหาด้วยเบอร์อื่น'
+          : messageKey === 'status'
+          ? 'ลองเลือกดูสถานะอื่น'
+          : 'กรอกเบอร์โทรศัพท์เพื่อค้นหา'}
       </p>
     </div>
   );

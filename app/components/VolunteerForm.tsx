@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { Users, CheckCircle2, ChevronRight, ChevronLeft, Car, Ship, Plane } from 'lucide-react';
+import {
+  Users,
+  CheckCircle2,
+  ChevronRight,
+  ChevronLeft,
+  Car,
+  Ship,
+  Plane,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { cn, generateId, volunteerStorage } from '@/app/lib/utils';
 import type { Volunteer } from '@/app/types';
@@ -136,8 +143,95 @@ const EMPTY_FORM: VolunteerFormData = {
   emergencyPhone: '',
 };
 
+const COPY = {
+  title: 'ลงทะเบียนอาสาสมัคร',
+  subtitle: 'ร่วมเป็นส่วนหนึ่งในการช่วยเหลือผู้ประสบภัย',
+  toastSuccess: 'ลงทะเบียนสำเร็จ',
+  success: {
+    title: 'ลงทะเบียนสำเร็จ',
+    subtitle:
+      'ขอบคุณที่ร่วมเป็นอาสาสมัคร เราจะติดต่อกลับเมื่อมีกิจกรรมที่เหมาะสม',
+    again: 'ลงทะเบียนอีกครั้ง',
+    nextTitle: 'ขั้นตอนต่อไป',
+    nextSubtitle:
+      'เราจะติดต่อกลับภายใน 3-5 วันทำการ เพื่อยืนยันการเป็นอาสาสมัครและให้ข้อมูลการปฐมนิเทศ',
+  },
+  fields: {
+    name: 'ชื่อ-นามสกุล',
+    namePlaceholder: 'กรอกชื่อ-นามสกุล',
+    phone: 'เบอร์โทรศัพท์',
+    phonePlaceholder: '0xx-xxx-xxxx',
+    email: 'อีเมล',
+    emailPlaceholder: 'example@email.com',
+    age: 'อายุ',
+    agePlaceholder: 'เช่น 30',
+    area: 'พื้นที่ที่สะดวก',
+    areaPlaceholder: 'เลือกพื้นที่',
+    availability: 'ช่วงเวลาที่สะดวก',
+    skills: 'ทักษะที่มี',
+    experience: 'ประสบการณ์',
+    experiencePlaceholder:
+      'เช่น เคยช่วยงานอาสา/กู้ภัยที่ไหน ประสบการณ์ด้านใด',
+    transport: 'พาหนะ/อุปกรณ์ที่มี',
+    emergencyContact: 'ชื่อผู้ติดต่อกรณีฉุกเฉิน',
+    emergencyContactPlaceholder: 'ชื่อ-นามสกุล',
+    emergencyPhone: 'เบอร์ติดต่อฉุกเฉิน',
+    emergencyPhonePlaceholder: '0xx-xxx-xxxx',
+  },
+  availability: {
+    'weekday-morning': 'วันธรรมดา เช้า',
+    'weekday-afternoon': 'วันธรรมดา บ่าย',
+    'weekday-evening': 'วันธรรมดา เย็น',
+    'weekend-morning': 'วันหยุด เช้า',
+    'weekend-afternoon': 'วันหยุด บ่าย',
+    'weekend-evening': 'วันหยุด เย็น',
+    emergency: 'ตลอดเวลา (กรณีฉุกเฉิน)',
+  },
+  skills: {
+    'first-aid': 'ปฐมพยาบาล',
+    cooking: 'ทำอาหาร',
+    driving: 'ขับรถ',
+    boating: 'ขับเรือ',
+    drone: 'บังคับโดรน',
+    construction: 'ช่างซ่อมบำรุง',
+    counseling: 'ให้คำปรึกษา',
+    teaching: 'สอน/ดูแลเด็ก',
+    translation: 'แปลภาษา',
+    it: 'คอมพิวเตอร์/IT',
+    photography: 'ถ่ายภาพ/บันทึกข้อมูล',
+    swimming: 'ว่ายน้ำ/ช่วยชีวิตทางน้ำ',
+    general: 'งานทั่วไป',
+  },
+  transportGroups: {
+    land: 'ทางบก',
+    water: 'ทางน้ำ',
+    air: 'ทางอากาศ',
+  },
+  transport: {
+    car: 'รถยนต์',
+    suv: 'รถ SUV/กระบะ',
+    motorcycle: 'มอเตอร์ไซค์',
+    truck: 'รถบรรทุก',
+    van: 'รถตู้',
+    bicycle: 'จักรยาน',
+    boat: 'เรือยนต์',
+    speedboat: 'เรือเร็ว',
+    longtail: 'เรือหางยาว',
+    raft: 'แพ/เรือพยาบาล',
+    'jet-ski': 'เจ็ทสกี',
+    drone: 'โดรน (ขนาดเล็ก)',
+    'large-drone': 'โดรนขนาดใหญ่',
+    helicopter: 'เฮลิคอปเตอร์',
+    ultralight: 'เครื่องบินเล็ก',
+  },
+  buttons: {
+    back: 'ย้อนกลับ',
+    next: 'ถัดไป',
+    submit: 'ส่งข้อมูลอาสาสมัคร',
+  },
+} as const;
+
 export function VolunteerForm() {
-  const t = useTranslations('home.volunteerForm');
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState<VolunteerFormData>(EMPTY_FORM);
@@ -164,7 +258,7 @@ export function VolunteerForm() {
       createdAt: new Date().toISOString(),
     };
     volunteerStorage.add(newVolunteer);
-    toast.success(t('toastSuccess'));
+    toast.success(COPY.toastSuccess);
     setSubmitted(true);
   };
 
@@ -189,20 +283,24 @@ export function VolunteerForm() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
             <CheckCircle2 className="h-8 w-8 text-green-600" />
           </div>
-          <h2 className="mb-2 text-gray-900">{t('success.title')}</h2>
-          <p className="mb-6 text-sm text-gray-600">{t('success.subtitle')}</p>
+          <h2 className="mb-2 text-gray-900">{COPY.success.title}</h2>
+          <p className="mb-6 text-sm text-gray-600">
+            {COPY.success.subtitle}
+          </p>
           <button
             onClick={resetForm}
             className="rounded-lg bg-primary px-6 py-2.5 text-white transition-colors hover:bg-[#e14a21]"
           >
-            {t('success.again')}
+            {COPY.success.again}
           </button>
         </div>
 
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
           <div className="text-sm text-gray-700">
-            <p className="mb-1 text-gray-900">{t('success.nextTitle')}</p>
-            <p className="text-xs text-gray-600">{t('success.nextSubtitle')}</p>
+            <p className="mb-1 text-gray-900">{COPY.success.nextTitle}</p>
+            <p className="text-xs text-gray-600">
+              {COPY.success.nextSubtitle}
+            </p>
           </div>
         </div>
       </div>
@@ -217,8 +315,8 @@ export function VolunteerForm() {
             <Users className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-gray-900">{t('title')}</h2>
-            <p className="text-sm text-gray-500">{t('subtitle')}</p>
+            <h2 className="text-gray-900">{COPY.title}</h2>
+            <p className="text-sm text-gray-500">{COPY.subtitle}</p>
           </div>
         </div>
 
@@ -242,30 +340,30 @@ export function VolunteerForm() {
         {step === 1 && (
           <div className="space-y-4">
             <LabeledInput
-              label={t('fields.name')}
+              label={COPY.fields.name}
               value={formData.name}
               onChange={(v) => setFormData((p) => ({ ...p, name: v }))}
-              placeholder={t('fields.namePlaceholder')}
+              placeholder={COPY.fields.namePlaceholder}
               required
             />
             <LabeledInput
-              label={t('fields.phone')}
+              label={COPY.fields.phone}
               value={formData.phone}
               onChange={(v) => setFormData((p) => ({ ...p, phone: v }))}
-              placeholder={t('fields.phonePlaceholder')}
+              placeholder={COPY.fields.phonePlaceholder}
               required
             />
             <LabeledInput
-              label={t('fields.email')}
+              label={COPY.fields.email}
               value={formData.email}
               onChange={(v) => setFormData((p) => ({ ...p, email: v }))}
-              placeholder={t('fields.emailPlaceholder')}
+              placeholder={COPY.fields.emailPlaceholder}
             />
             <LabeledInput
-              label={t('fields.age')}
+              label={COPY.fields.age}
               value={formData.age}
               onChange={(v) => setFormData((p) => ({ ...p, age: v }))}
-              placeholder={t('fields.agePlaceholder')}
+              placeholder={COPY.fields.agePlaceholder}
             />
           </div>
         )}
@@ -274,14 +372,14 @@ export function VolunteerForm() {
           <div className="space-y-4">
             <div>
               <label className="mb-2 block text-sm text-gray-700">
-                {t('fields.area')}
+                {COPY.fields.area}
               </label>
               <select
                 value={formData.area}
                 onChange={(e) => setFormData((p) => ({ ...p, area: e.target.value }))}
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="">{t('fields.areaPlaceholder')}</option>
+                <option value="">{COPY.fields.areaPlaceholder}</option>
                 {areas.map((area) => (
                   <option key={area} value={area}>
                     {area}
@@ -292,7 +390,7 @@ export function VolunteerForm() {
 
             <div>
               <label className="mb-2 block text-sm text-gray-700">
-                {t('fields.availability')}
+                {COPY.fields.availability}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 {availabilityOptions.map((option) => {
@@ -307,7 +405,7 @@ export function VolunteerForm() {
                         active ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 hover:border-gray-300'
                       )}
                     >
-                      {t(`availability.${option}`)}
+                      {COPY.availability[option]}
                     </button>
                   );
                 })}
@@ -320,7 +418,7 @@ export function VolunteerForm() {
           <div className="space-y-4">
             <div>
               <label className="mb-2 block text-sm text-gray-700">
-                {t('fields.skills')}
+                {COPY.fields.skills}
               </label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {skillOptions.map((skill) => {
@@ -336,7 +434,7 @@ export function VolunteerForm() {
                       )}
                     >
                       <span>{skill.icon}</span>
-                      <span>{t(`skills.${skill.id}`)}</span>
+                      <span>{COPY.skills[skill.id]}</span>
                     </button>
                   );
                 })}
@@ -345,14 +443,14 @@ export function VolunteerForm() {
 
             <div>
               <label className="mb-2 block text-sm text-gray-700">
-                {t('fields.experience')}
+                {COPY.fields.experience}
               </label>
               <textarea
                 value={formData.experience}
                 onChange={(e) => setFormData((p) => ({ ...p, experience: e.target.value }))}
                 rows={3}
                 className="w-full rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-primary focus:ring-2 focus:ring-primary/20"
-                placeholder={t('fields.experiencePlaceholder')}
+                placeholder={COPY.fields.experiencePlaceholder}
               />
             </div>
           </div>
@@ -362,13 +460,13 @@ export function VolunteerForm() {
           <div className="space-y-4">
             <div>
               <label className="mb-2 block text-sm text-gray-700">
-                {t('fields.transport')}
+                {COPY.fields.transport}
               </label>
               <div className="space-y-3">
                 {Object.entries(transportOptions).map(([group, options]) => (
                   <div key={group}>
                     <div className="mb-2 text-xs text-gray-500">
-                      {t(`transportGroups.${group as 'land' | 'water' | 'air'}`)}
+                      {COPY.transportGroups[group as 'land' | 'water' | 'air']}
                     </div>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {options.map((option) => {
@@ -385,7 +483,7 @@ export function VolunteerForm() {
                             )}
                           >
                             <Icon className="h-4 w-4" />
-                            <span>{t(`transport.${option.id}`)}</span>
+                            <span>{COPY.transport[option.id]}</span>
                           </button>
                         );
                       })}
@@ -397,16 +495,16 @@ export function VolunteerForm() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               <LabeledInput
-                label={t('fields.emergencyContact')}
+                label={COPY.fields.emergencyContact}
                 value={formData.emergencyContact}
                 onChange={(v) => setFormData((p) => ({ ...p, emergencyContact: v }))}
-                placeholder={t('fields.emergencyContactPlaceholder')}
+                placeholder={COPY.fields.emergencyContactPlaceholder}
               />
               <LabeledInput
-                label={t('fields.emergencyPhone')}
+                label={COPY.fields.emergencyPhone}
                 value={formData.emergencyPhone}
                 onChange={(v) => setFormData((p) => ({ ...p, emergencyPhone: v }))}
-                placeholder={t('fields.emergencyPhonePlaceholder')}
+                placeholder={COPY.fields.emergencyPhonePlaceholder}
               />
             </div>
           </div>
@@ -421,7 +519,7 @@ export function VolunteerForm() {
             className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-white px-6 py-3 text-gray-700 transition-colors hover:bg-gray-50"
           >
             <ChevronLeft className="h-4 w-4" />
-            <span>{t('buttons.back')}</span>
+            <span>{COPY.buttons.back}</span>
           </button>
         )}
 
@@ -435,7 +533,7 @@ export function VolunteerForm() {
               canNext ? 'bg-primary text-white hover:bg-[#e14a21]' : 'cursor-not-allowed bg-gray-200 text-gray-400'
             )}
           >
-            <span>{t('buttons.next')}</span>
+            <span>{COPY.buttons.next}</span>
             <ChevronRight className="h-4 w-4" />
           </button>
         ) : (
@@ -445,7 +543,7 @@ export function VolunteerForm() {
             className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white shadow-sm transition-colors hover:bg-[#e14a21]"
           >
             <CheckCircle2 className="h-5 w-5" />
-            <span>{t('buttons.submit')}</span>
+            <span>{COPY.buttons.submit}</span>
           </button>
         )}
       </div>

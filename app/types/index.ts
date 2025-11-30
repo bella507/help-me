@@ -25,6 +25,8 @@ export interface HelpRequest {
   petsType?: string;
   medicalNeeds?: string;
   images?: string[];
+  userEmail?: string;
+  userId?: string;
 }
 
 export interface SpecialNeeds {
