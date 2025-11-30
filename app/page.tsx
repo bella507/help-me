@@ -31,7 +31,7 @@ import { Dashboard } from './components/Dashboard';
 import { DonationsList } from './components/DonationsList';
 import { EmergencyContacts } from './components/EmergencyContacts';
 import { FAQ } from './components/FAQ';
-import { HelpRequestForm } from './components/HelpRequestForm';
+import { HelpRequestModal } from './components/HelpRequestModal';
 import { MapOverview } from './components/MapOverview';
 import { MyRequests } from './components/MyRequests';
 import { NewsFeed } from './components/NewsFeed';
@@ -39,7 +39,6 @@ import { PreparationGuide } from './components/PreparationGuide';
 import { RequestsList } from './components/RequestsList';
 import { RiskAreas } from './components/RiskAreas';
 import { SheltersList } from './components/SheltersList';
-import { Toaster } from './components/ui/sonner';
 import { VolunteerDashboard } from './components/VolunteerDashboard';
 import { VolunteerForm } from './components/VolunteerForm';
 import { Weather } from './components/Weather';
@@ -114,8 +113,9 @@ type SosCopy = {
 export default function App() {
   const [userRole, setUserRole] = useState<UserRole>('user');
   const [showLogin, setShowLogin] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>('request');
+  const [activeTab, setActiveTab] = useState<TabType>('news');
   const [showMenu, setShowMenu] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState<Language>(() => {
     if (typeof window === 'undefined') return 'th';
@@ -186,10 +186,12 @@ export default function App() {
         setActiveTab={setActiveTab}
         showMenu={showMenu}
         setShowMenu={setShowMenu}
+        setLanguage={setLanguage}
+        showHelpModal={showHelpModal}
+        setShowHelpModal={setShowHelpModal}
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         language={language}
-        setLanguage={setLanguage}
       />
     </NextIntlClientProvider>
   );
@@ -204,6 +206,8 @@ type AppContentProps = {
   setActiveTab: (tab: TabType) => void;
   showMenu: boolean;
   setShowMenu: (show: boolean | ((prev: boolean) => boolean)) => void;
+  showHelpModal: boolean;
+  setShowHelpModal: (show: boolean) => void;
   darkMode: boolean;
   setDarkMode: (value: boolean | ((prev: boolean) => boolean)) => void;
   language: Language;
@@ -219,10 +223,9 @@ function AppContent({
   setActiveTab,
   showMenu,
   setShowMenu,
+  showHelpModal,
+  setShowHelpModal,
   darkMode,
-  setDarkMode,
-  language,
-  setLanguage,
 }: AppContentProps) {
   const t = useTranslations('home');
   const heroRaw = t.raw('hero') as HeroCopyRaw;
@@ -242,7 +245,6 @@ function AppContent({
 
   const mainTabs = useMemo<HomeTab[]>(
     () => [
-      { id: 'request', icon: FileText, label: t('request') },
       { id: 'news', icon: Newspaper, label: t('news') },
       { id: 'status', icon: Heart, label: t('status') },
       { id: 'shelters', icon: Bed, label: t('shelters') },
@@ -332,21 +334,13 @@ function AppContent({
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <SosControls copy={sosCopy} onRequest={() => setActiveTab('request')} />
+      <SosControls copy={sosCopy} onRequest={() => setShowHelpModal(true)} />
 
-      <HomeHeader
-        darkMode={darkMode}
-        language={language}
-        title={t('title')}
-        onToggleDarkMode={() => setDarkMode(prev => !prev)}
-        onToggleLanguage={() =>
-          setLanguage(prev => (prev === 'th' ? 'en' : 'th'))
-        }
-      />
+      <HomeHeader title={t('title')} />
 
       <HeroSection
         darkMode={darkMode}
-        onRequest={() => setActiveTab('request')}
+        onRequest={() => setShowHelpModal(true)}
         copy={heroCopy}
       />
 
@@ -364,7 +358,7 @@ function AppContent({
       />
 
       <main className="mx-auto max-w-7xl px-4 pb-20 pt-4 sm:px-6 sm:pb-24 sm:pt-6 lg:px-8">
-        {activeTab === 'request' && <HelpRequestForm />}
+        {/* {activeTab === 'request' && <HelpRequestForm />} */}
         {activeTab === 'news' && <NewsFeed />}
         {activeTab === 'status' && <RequestsList />}
         {activeTab === 'shelters' && <SheltersList />}
@@ -399,7 +393,7 @@ function AppContent({
         onClose={() => setShowMenu(false)}
       />
 
-      <Toaster position="top-center" richColors />
+      <HelpRequestModal open={showHelpModal} onOpenChange={setShowHelpModal} />
     </div>
   );
 }

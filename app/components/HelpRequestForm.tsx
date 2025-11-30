@@ -22,10 +22,13 @@ import {
   Baby,
   HeartPulse,
   Pill,
+  Loader2,
+  X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn, generateId, requestStorage } from '@/app/lib/utils';
 import type { HelpRequest } from '@/app/types';
+import { useShareLocation } from '@/app/hooks';
 
 type FormData = {
   name: string;
@@ -79,10 +82,16 @@ const EMPTY_FORM: FormData = {
   specialNeeds: '',
 };
 
-export function HelpRequestForm() {
+type HelpRequestFormProps = {
+  onSuccess?: () => void;
+};
+
+export function HelpRequestForm({ onSuccess }: HelpRequestFormProps = {}) {
   const t = useTranslations('home.requestForm');
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
+  const { getCurrentLocation, isLoading: isLoadingLocation } =
+    useShareLocation();
 
   const progress = useMemo(
     () => Math.round((step / TOTAL_STEPS) * 100),
@@ -90,7 +99,12 @@ export function HelpRequestForm() {
   );
 
   const canProceed = useMemo(() => {
-    if (step === 1) return formData.name.trim() && formData.phone.trim();
+    if (step === 1)
+      return (
+        formData.name.trim() &&
+        formData.phone.trim() &&
+        formData.phone.length === 10
+      );
     if (step === 2) return formData.location.trim();
     if (step === 3) return formData.category && formData.urgency;
     return true;
@@ -121,6 +135,18 @@ export function HelpRequestForm() {
       riskGroupDetails: { ...prev.riskGroupDetails, [group]: value },
     }));
 
+  const handleGetLocation = async () => {
+    try {
+      const location = await getCurrentLocation();
+      const locationString = `${location.latitude.toFixed(
+        6
+      )}, ${location.longitude.toFixed(6)}`;
+      setField('location', locationString);
+    } catch {
+      // Error already handled in hook
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -142,6 +168,7 @@ export function HelpRequestForm() {
     toast.success(t('toastSuccess'));
     setFormData(EMPTY_FORM);
     setStep(1);
+    onSuccess?.();
   };
 
   const urgencyPill = (
@@ -195,10 +222,23 @@ export function HelpRequestForm() {
                 <input
                   type="tel"
                   value={formData.phone}
-                  onChange={e => setField('phone', e.target.value)}
+                  onChange={e => {
+                    const value = e.target.value.replace(/\D/g, '');
+                    if (value.length <= 10) {
+                      setField('phone', value);
+                    }
+                  }}
                   className={INPUT_CLASS}
-                  placeholder={t('fields.phonePlaceholder')}
+                  placeholder="0812345678"
+                  maxLength={10}
+                  pattern="[0-9]{10}"
                 />
+                {formData.phone && formData.phone.length < 10 && (
+                  <p className="mt-1 text-xs text-orange-600">
+                    ⚠️ กรุณากรอกเบอร์โทรให้ครบ 10 หลัก (ปัจจุบัน:{' '}
+                    {formData.phone.length}/10)
+                  </p>
+                )}
               </Field>
             </div>
           </Section>
@@ -211,17 +251,72 @@ export function HelpRequestForm() {
             subtitle={t('sections.location.subtitle')}
           >
             <div className="space-y-4">
-              <Field label={t('fields.location')} required>
-                <input
-                  type="text"
-                  value={formData.location}
-                  onChange={e => setField('location', e.target.value)}
-                  className={INPUT_CLASS}
-                  placeholder={t('fields.locationPlaceholder')}
-                />
+              <Field label="ที่อยู่ของคุณ" required>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      disabled
+                      type="text"
+                      value={formData.location}
+                      onChange={e => setField('location', e.target.value)}
+                      className={cn(INPUT_CLASS, 'flex-1')}
+                      placeholder="กรอกที่อยู่หรือกดปุ่มดึงตำแหน่ง GPS"
+                    />
+                    {formData.location && (
+                      <button
+                        type="button"
+                        onClick={() => setField('location', '')}
+                        className="flex items-center gap-2 rounded-lg border-2 border-red-200 bg-white px-4 py-3 text-red-600 transition-colors hover:border-red-300 hover:bg-red-50"
+                        title="ลบที่อยู่"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleGetLocation}
+                      disabled={isLoadingLocation}
+                      className="flex items-center gap-2 rounded-lg bg-primary px-4 py-3 text-white transition-colors hover:bg-[#e14a21] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isLoadingLocation ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <MapPin className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    💡 กดปุ่มเพื่อดึงพิกัด GPS อัตโนมัติ
+                  </p>
+
+                  {/* Show map preview when location is filled */}
+                  {formData.location && formData.location.includes(',') && (
+                    <div className="mt-3 rounded-lg border-2 border-gray-200 bg-gray-50 p-3">
+                      <div className="mb-2">
+                        <span className="text-sm font-medium text-gray-700">
+                          🗺️ ตัวอย่างตำแหน่ง
+                        </span>
+                      </div>
+                      <div className="overflow-hidden rounded-lg border border-gray-300">
+                        <iframe
+                          width="100%"
+                          height="200"
+                          style={{ border: 0 }}
+                          src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${formData.location}&zoom=15&language=th&region=TH`}
+                          allowFullScreen
+                          loading="lazy"
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
+                      </div>
+                      <p className="mt-2 text-xs text-gray-600">
+                        📍 {formData.location}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </Field>
 
-              <Field label={t('fields.address')}>
+              {/* <Field label={t('fields.address')}>
                 <input
                   type="text"
                   value={formData.address}
@@ -229,7 +324,7 @@ export function HelpRequestForm() {
                   className={INPUT_CLASS}
                   placeholder={t('fields.addressPlaceholder')}
                 />
-              </Field>
+              </Field> */}
             </div>
           </Section>
         )}
@@ -481,13 +576,10 @@ export function HelpRequestForm() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-900">
-                      {
-                        CATEGORY_OPTIONS.find(
-                          c => c.value === formData.category
-                        )?.value
-                          ? t(`categories.${formData.category}`)
-                          : ''
-                      }
+                      {CATEGORY_OPTIONS.find(c => c.value === formData.category)
+                        ?.value
+                        ? t(`categories.${formData.category}`)
+                        : ''}
                     </span>
                     <span
                       className={urgencyPill(
@@ -569,9 +661,7 @@ export function HelpRequestForm() {
               <div className="flex gap-3">
                 <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <div className="text-sm text-gray-700">
-                  <p className="mb-1 text-gray-900">
-                    {t('review.alertTitle')}
-                  </p>
+                  <p className="mb-1 text-gray-900">{t('review.alertTitle')}</p>
                   <p className="text-xs text-gray-600">
                     {t('review.alertSubtitle')}
                   </p>

@@ -1,44 +1,31 @@
 'use client';
 
-import { Globe, Heart, Moon, Sun } from 'lucide-react';
-import type { Language } from '@/app/types';
 import { cn } from '@/app/lib/utils';
-import { NotificationCenter } from '../NotificationCenter';
+import Image from 'next/image';
 
 type HomeHeaderProps = {
-  darkMode: boolean;
-  language: Language;
   title: string;
-  onToggleDarkMode: () => void;
-  onToggleLanguage: () => void;
 };
 
-export function HomeHeader({
-  darkMode,
-  language,
-  title,
-  onToggleDarkMode,
-  onToggleLanguage,
-}: HomeHeaderProps) {
+export function HomeHeader({ title }: HomeHeaderProps) {
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-50 border-b',
-        darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-      )}
-    >
-      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+    <header className={cn('sticky top-0 z-50 bg-white')}>
+      <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8 ">
+        <div className="flex items-center justify-between ">
           <div className="flex items-center gap-2">
-            <div className="rounded-lg bg-primary p-2">
-              <Heart className="h-5 w-5 text-white" />
+            <div className=" relative w-[48px] h-[48px]">
+              <Image
+                src="/images/logo.webp"
+                alt="Logo"
+                width={48}
+                height={48}
+              />
             </div>
-            <span className={cn('text-sm', darkMode ? 'text-gray-100' : 'text-gray-900')}>
+            <span className={cn('text-2xl font-bold text-gray-900')}>
               {title}
             </span>
           </div>
-
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <NotificationCenter />
             <button
               onClick={onToggleDarkMode}
@@ -65,7 +52,7 @@ export function HomeHeader({
             <span className={cn('text-xs', darkMode ? 'text-gray-200' : 'text-gray-700')}>
               {language.toUpperCase()}
             </span>
-          </div>
+          </div> */}
         </div>
       </div>
     </header>
