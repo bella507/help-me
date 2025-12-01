@@ -17,6 +17,7 @@ import {
   Phone,
   Users,
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import type { TabType, UserRole } from '@/app/types';
 import { AdminDashboard } from './components/AdminDashboard';
 import { AdminLogin } from './components/AdminLogin';
@@ -103,11 +104,13 @@ const MENU_ITEMS: MenuItem[] = [
 ];
 
 export default function App() {
+  const { status: sessionStatus, data: session } = useSession();
   const [userRole, setUserRole] = useState<UserRole>('user');
   const [showLogin, setShowLogin] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('news');
   const [showMenu, setShowMenu] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
+  const [hasOpenedAfterLogin, setHasOpenedAfterLogin] = useState(false);
   const darkMode = false;
 
   useEffect(() => {
@@ -143,6 +146,23 @@ export default function App() {
       window.clearTimeout(loginTimeout);
     };
   }, []);
+
+  useEffect(() => {
+    if (sessionStatus !== 'authenticated') {
+      setHasOpenedAfterLogin(false);
+      return;
+    }
+
+    const userId = session?.user?.id || 'default';
+    const storageKey = `helpModalShown_${userId}`;
+    const alreadyShown = localStorage.getItem(storageKey) === 'true';
+
+    if (!alreadyShown && !hasOpenedAfterLogin) {
+      setShowHelpModal(true);
+      setHasOpenedAfterLogin(true);
+      localStorage.setItem(storageKey, 'true');
+    }
+  }, [sessionStatus, session?.user?.id, hasOpenedAfterLogin]);
 
   return (
     <AppContent

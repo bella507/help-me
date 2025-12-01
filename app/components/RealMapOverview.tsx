@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { LatLngBounds, Map as LeafletMap } from 'leaflet';
+import type { Map as LeafletMap } from 'leaflet';
 import dynamic from 'next/dynamic';
 import { MapPin, AlertCircle, Phone, Navigation, Package } from 'lucide-react';
 import type { HelpRequest } from '@/app/types';
@@ -162,21 +162,16 @@ export function RealMapOverview() {
                   const { latLngBounds } = leafletLib;
                   const map = mapRef.current;
                   const latLngs = markers.map(m => m.getLatLng());
-                  const initialBounds = map.getBounds();
-                  const baseBounds: LatLngBounds = initialBounds
-                    ? initialBounds.pad(-1)
-                    : latLngBounds(latLngs[0], latLngs[0]);
-                  const bounds = latLngs.reduce(
-                    (b, latLng) => b.extend(latLng),
-                    baseBounds
-                  );
+                  const bounds = latLngBounds(latLngs);
 
-                  if (bounds) {
-                    map.fitBounds(bounds, { padding: [40, 40] });
-                    // Keep current zoom if bounds didn't expand (cluster at same point)
-                    if (initialBounds && initialBounds.equals(bounds)) {
-                      map.setView(latLngs[0], Math.max(14, map.getZoom()));
-                    }
+                  // Fit to include all markers without over-zooming
+                  map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
+                  // If all markers overlap and bounds are tiny, nudge zoom a bit but cap it
+                  if (latLngs.length === 1) {
+                    map.setView(
+                      latLngs[0],
+                      Math.min(16, Math.max(12, map.getZoom()))
+                    );
                   }
                 }}
               >
