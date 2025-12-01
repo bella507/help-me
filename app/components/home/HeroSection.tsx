@@ -22,7 +22,7 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
   const stats = [
     { value: '24/7', label: 'ให้บริการ' },
     { value: 'ฟรี', label: 'ไม่มีค่าใช้จ่าย' },
-    // { value: 'รวดเร็ว', label: 'ตอบรับทันที' },
+    { value: 'รวดเร็ว', label: 'ไม่ต้องรอนาน' },
   ];
   const numbers: Array<{
     number: string;
@@ -142,7 +142,7 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
               </button>
             </div>
 
-            <div className="flex items-center justify-center gap-4 pt-2 text-sm text-gray-500 lg:justify-start">
+            {/* <div className="flex items-center justify-center gap-4 pt-2 text-sm text-gray-500 lg:justify-start">
               <div className="flex items-center gap-1.5">
                 <Shield className="h-4 w-4" />
                 <span>ปลอดภัย</span>
@@ -157,7 +157,7 @@ export function HeroSection({ darkMode, onRequest }: HeroSectionProps) {
                 <Users className="h-4 w-4" />
                 <span>ช่วยเหลือแล้ว 1,000+ คน</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="hidden lg:block">
