@@ -175,6 +175,75 @@ export const mockHelpRequests = [
     elderlyCount: 1,
     medicalNeeds: 'ยาหัวใจ Atenolol 50mg, ยาลดความดันโลหิต',
   },
+  {
+    id: 'req008',
+    name: 'ศิริพร น้ำใจงาม',
+    phone: '083-222-4455',
+    location: 'ซอยประชาชื่น 24 เขตบางซื่อ กรุงเทพฯ',
+    latitude: 13.8198,
+    longitude: 100.5304,
+    category: 'food',
+    urgency: 'high',
+    description: 'น้ำท่วมสูง รถเข้าไม่ได้ ต้องการอาหาร-น้ำดื่มด่วน',
+    status: 'pending' as const,
+    createdAt: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    specialNeeds: {
+      elderly: false,
+      children: true,
+      disabled: false,
+      pregnant: false,
+      pets: false,
+      medical: false,
+    },
+    childrenCount: 1,
+  },
+  {
+    id: 'req009',
+    name: 'ชาญชัย พัฒนศักดิ์',
+    phone: '064-789-1234',
+    location: 'หมู่บ้านกรีนปาร์ค ตำบลบางพลีใหญ่ จังหวัดสมุทรปราการ',
+    latitude: 13.6289,
+    longitude: 100.7232,
+    category: 'evacuation',
+    urgency: 'high',
+    description: 'ระดับน้ำสูงถึงเอว มีผู้สูงอายุและเด็กเล็ก ต้องการอพยพ',
+    status: 'pending' as const,
+    createdAt: new Date(Date.now() - 90 * 60 * 1000).toISOString(),
+    specialNeeds: {
+      elderly: true,
+      children: true,
+      disabled: false,
+      pregnant: false,
+      pets: true,
+      medical: false,
+    },
+    elderlyCount: 1,
+    childrenCount: 2,
+    petsCount: 1,
+    petsType: 'สุนัข 1 ตัว',
+  },
+  {
+    id: 'req010',
+    name: 'พรทิพย์ สุทธิกุล',
+    phone: '081-555-7890',
+    location: 'ถนนร่มเกล้า เขตลาดกระบัง กรุงเทพฯ',
+    latitude: 13.7261,
+    longitude: 100.778,
+    category: 'shelter',
+    urgency: 'medium',
+    description: 'บ้านทรุดตัว ต้องการที่พักชั่วคราวและเสื้อผ้า',
+    status: 'in-progress' as const,
+    createdAt: new Date(Date.now() - 3.5 * 60 * 60 * 1000).toISOString(),
+    specialNeeds: {
+      elderly: true,
+      children: false,
+      disabled: false,
+      pregnant: false,
+      pets: false,
+      medical: false,
+    },
+    elderlyCount: 1,
+  },
 ];
 
 export const mockNews = [
@@ -623,42 +692,14 @@ export const mockNotifications = [
 
 // Function to initialize mock data in localStorage
 export function initializeMockData() {
-  // Check if data already exists
-  const existingRequests = localStorage.getItem('helpRequests');
-
-  // Force reinitialize if data structure is old (skills as string instead of array)
-  const needsUpdate = () => {
-    try {
-      const volunteers = localStorage.getItem('volunteers');
-      if (volunteers) {
-        const parsed = JSON.parse(volunteers);
-        if (parsed.length > 0 && typeof parsed[0].skills === 'string') {
-          return true; // Old data structure
-        }
-      }
-    } catch {
-      return true;
-    }
-    return false;
-  };
-
-  // Only initialize if no data exists or data structure is outdated
-  if (
-    !existingRequests ||
-    JSON.parse(existingRequests).length === 0 ||
-    needsUpdate()
-  ) {
-    localStorage.setItem('helpRequests', JSON.stringify(mockHelpRequests));
-    localStorage.setItem('newsItems', JSON.stringify(mockNews));
-    localStorage.setItem('shelters', JSON.stringify(mockShelters));
-    localStorage.setItem('riskAreas', JSON.stringify(mockRiskAreas));
-    localStorage.setItem('donationNeeds', JSON.stringify(mockDonations));
-    localStorage.setItem('faqs', JSON.stringify(mockFAQs));
-    localStorage.setItem('volunteers', JSON.stringify(mockVolunteers));
-    localStorage.setItem('notifications', JSON.stringify(mockNotifications));
-
-    return true;
-  }
-
-  return false;
+  // Always reset mock data on load to avoid stale localStorage
+  localStorage.setItem('helpRequests', JSON.stringify(mockHelpRequests));
+  localStorage.setItem('newsItems', JSON.stringify(mockNews));
+  localStorage.setItem('shelters', JSON.stringify(mockShelters));
+  localStorage.setItem('riskAreas', JSON.stringify(mockRiskAreas));
+  localStorage.setItem('donationNeeds', JSON.stringify(mockDonations));
+  localStorage.setItem('faqs', JSON.stringify(mockFAQs));
+  localStorage.setItem('volunteers', JSON.stringify(mockVolunteers));
+  localStorage.setItem('notifications', JSON.stringify(mockNotifications));
+  return true;
 }

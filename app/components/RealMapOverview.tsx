@@ -1,16 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { LatLngBounds, Map as LeafletMap } from 'leaflet';
 import dynamic from 'next/dynamic';
-import {
-  MapPin,
-  AlertCircle,
-  Clock,
-  Users,
-  Phone,
-  Navigation,
-  Package,
-} from 'lucide-react';
+import { MapPin, AlertCircle, Phone, Navigation, Package } from 'lucide-react';
 import type { HelpRequest } from '@/app/types';
 import { CATEGORY_LABELS, REQUEST_STATUS } from '@/app/lib/constants';
 import {
@@ -20,6 +13,8 @@ import {
   getUrgencyBadge,
   requestStorage,
 } from '@/app/lib/utils';
+import { initializeMockData } from '../data/mockData';
+import Link from 'next/link';
 
 // Import Map dynamically to avoid SSR issues
 const MapContainer = dynamic(
@@ -37,38 +32,61 @@ const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), {
   ssr: false,
 });
 const MarkerClusterGroup = dynamic(
-  () => import('react-leaflet-cluster'),
-  { ssr: false }
+  () => import('react-leaflet-cluster').then(mod => mod.default),
+  {
+    ssr: false,
+  }
 );
 
 type StatusFilter = 'all' | HelpRequest['status'];
 type UrgencyFilter = 'all' | HelpRequest['urgency'];
 
 export function RealMapOverview() {
-  const [requests, setRequests] = useState<HelpRequest[]>([]);
-  const [selectedRequest, setSelectedRequest] = useState<HelpRequest | null>(
+  const mapRef = useRef<LeafletMap | null>(null);
+  const [leafletLib, setLeafletLib] = useState<typeof import('leaflet') | null>(
     null
   );
+  const [requests, setRequests] = useState<HelpRequest[]>([]);
   const [filterStatus, setFilterStatus] = useState<StatusFilter>('all');
   const [filterUrgency, setFilterUrgency] = useState<UrgencyFilter>('all');
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsMounted(true), 0);
-    return () => clearTimeout(timer);
+    // Load Leaflet on client only to avoid SSR "window is not defined"
+    void import('leaflet').then(mod => setLeafletLib(mod));
+    setIsMounted(true);
   }, []);
 
   useEffect(() => {
+    initializeMockData();
+
     const sync = () => {
       const data = requestStorage.getAll();
-
-      setRequests(data);
+      setRequests(prev => {
+        if (prev.length === data.length) {
+          const same = prev.every(
+            (item, idx) =>
+              item.id === data[idx].id &&
+              item.status === data[idx].status &&
+              item.urgency === data[idx].urgency &&
+              item.latitude === data[idx].latitude &&
+              item.longitude === data[idx].longitude &&
+              item.createdAt === data[idx].createdAt
+          );
+          if (same) return prev;
+        }
+        return data;
+      });
     };
+
     const t = window.setTimeout(sync, 0);
     const interval = window.setInterval(sync, 3000);
+    window.addEventListener('storage', sync);
+
     return () => {
       window.clearTimeout(t);
       window.clearInterval(interval);
+      window.removeEventListener('storage', sync);
     };
   }, []);
 
@@ -77,7 +95,7 @@ export function RealMapOverview() {
       const statusMatch = filterStatus === 'all' || req.status === filterStatus;
       const urgencyMatch =
         filterUrgency === 'all' || req.urgency === filterUrgency;
-      const hasCoords = req.latitude && req.longitude;
+      const hasCoords = req.latitude != null && req.longitude != null;
       return statusMatch && urgencyMatch && hasCoords;
     });
 
@@ -110,10 +128,11 @@ export function RealMapOverview() {
 
       <div className="rounded-lg border border-gray-200 bg-white p-3 sm:p-6">
         <div className="relative h-[400px] w-full overflow-hidden rounded-lg border-2 border-gray-200 sm:h-[500px] lg:h-[600px]">
-          {isMounted && typeof window !== 'undefined' && (
+          {isMounted && (
             <MapContainer
               center={center}
               zoom={11}
+              ref={mapRef}
               style={{ height: '100%', width: '100%' }}
               className="z-0"
             >
@@ -124,55 +143,61 @@ export function RealMapOverview() {
               />
 
               <MarkerClusterGroup
+                key={`${filteredRequests.length}-${filterStatus}-${filterUrgency}`}
                 chunkedLoading
                 showCoverageOnHover={false}
                 spiderfyOnMaxZoom={true}
+                zoomToBoundsOnClick
                 maxClusterRadius={60}
+                onClick={cluster => {
+                  if (!leafletLib || !mapRef.current) return;
+
+                  const leafletCluster = cluster?.layer;
+                  const markers =
+                    (leafletCluster?.getAllChildMarkers?.() as {
+                      getLatLng: () => { lat: number; lng: number };
+                    }[]) || [];
+                  if (!markers.length) return;
+
+                  const { latLngBounds } = leafletLib;
+                  const map = mapRef.current;
+                  const latLngs = markers.map(m => m.getLatLng());
+                  const initialBounds = map.getBounds();
+                  const baseBounds: LatLngBounds = initialBounds
+                    ? initialBounds.pad(-1)
+                    : latLngBounds(latLngs[0], latLngs[0]);
+                  const bounds = latLngs.reduce(
+                    (b, latLng) => b.extend(latLng),
+                    baseBounds
+                  );
+
+                  if (bounds) {
+                    map.fitBounds(bounds, { padding: [40, 40] });
+                    // Keep current zoom if bounds didn't expand (cluster at same point)
+                    if (initialBounds && initialBounds.equals(bounds)) {
+                      map.setView(latLngs[0], Math.max(14, map.getZoom()));
+                    }
+                  }
+                }}
               >
                 {filteredRequests.map(request => (
-                  <MapMarker
-                    key={request.id}
-                    request={request}
-                    onClick={() => setSelectedRequest(request)}
-                  />
+                  <MapMarker key={request.id} request={request} />
                 ))}
               </MarkerClusterGroup>
             </MapContainer>
-          )}
-          {!isMounted && (
-            <div className="flex h-full items-center justify-center bg-gray-50">
-              <div className="text-center">
-                <div className="mb-2 h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-primary mx-auto" />
-                <p className="text-sm text-gray-500">กำลังโหลดแผนที่...</p>
-              </div>
-            </div>
           )}
         </div>
       </div>
 
       {filteredRequests.length === 0 && <EmptyState />}
 
-      {/* Modal for Request Details */}
-      {selectedRequest && (
-        <RequestDetailsModal
-          request={selectedRequest}
-          onClose={() => setSelectedRequest(null)}
-        />
-      )}
-
       <InfoNotice />
     </div>
   );
 }
 
-function MapMarker({
-  request,
-  onClick,
-}: {
-  request: HelpRequest;
-  onClick: () => void;
-}) {
-  const [L, setL] = useState<any>(null);
+function MapMarker({ request }: { request: HelpRequest }) {
+  const [L, setL] = useState<typeof import('leaflet') | null>(null);
 
   useEffect(() => {
     import('leaflet').then(leaflet => {
@@ -221,47 +246,72 @@ function MapMarker({
   return (
     <Marker position={[request.latitude, request.longitude]} icon={customIcon}>
       <Popup closeButton={false} className="custom-popup">
-        <div className="min-w-[250px] p-2">
-          <div className="mb-2 flex items-center justify-between">
-            <div className="font-semibold text-gray-900">{request.name}</div>
+        <div className="min-w-[260px] space-y-2 p-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="font-semibold text-gray-900 truncate">
+                {request.name}
+              </div>
+              <div className="text-xs text-gray-500">
+                {formatDate(request.createdAt)}
+              </div>
+            </div>
             <div className="flex gap-1">
-              <span
+              <BadgePill
+                text={urgency.text}
                 className={cn(
-                  'rounded px-1.5 py-0.5 text-[10px]',
                   urgency.bgClass,
-                  urgency.textClass
+                  urgency.textClass,
+                  urgency.borderClass
                 )}
-              >
-                {urgency.text}
-              </span>
-              <span
+              />
+              <BadgePill
+                text={status.text}
                 className={cn(
-                  'rounded px-1.5 py-0.5 text-[10px]',
                   status.bgClass,
-                  status.textClass
+                  status.textClass,
+                  status.borderClass
                 )}
-              >
-                {status.text}
-              </span>
+              />
             </div>
           </div>
-          <div className="mb-2 text-xs text-gray-600">{request.location}</div>
-          <div className="mb-2 flex items-center gap-1.5 text-xs text-gray-700">
-            <Package className="h-3 w-3" />
-            <span>{CATEGORY_LABELS[request.category] || request.category}</span>
+
+          <div className="space-y-1 rounded-lg border border-gray-200 bg-gray-50 p-2 text-xs text-gray-700">
+            <div className="flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
+              <span className="line-clamp-2">{request.location}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Package className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+              <span>
+                {CATEGORY_LABELS[request.category] || request.category}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Phone className="h-3.5 w-3.5 shrink-0 text-gray-500" />
+              <a
+                href={`tel:${request.phone}`}
+                className="text-primary hover:underline"
+              >
+                {request.phone}
+              </a>
+            </div>
           </div>
-          <div className="text-xs text-gray-500 mb-2">
-            {formatDate(request.createdAt)}
-          </div>
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              onClick();
-            }}
-            className="mt-2 w-full rounded bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-[#e14a21] transition-colors"
+
+          {request.description && (
+            <p className="line-clamp-2 text-xs text-gray-600">
+              {request.description}
+            </p>
+          )}
+          <Link
+            href={`https://www.google.com/maps/search/?api=1&query=${request.latitude},${request.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center  justify-center gap-1 rounded bg-primary px-3 py-1.5 text-xs font-medium text-white! transition-colors hover:bg-[#e14a21]"
           >
-            ดูรายละเอียด
-          </button>
+            <Navigation className="h-4 w-4" />
+            <span>ดูใน Google Maps</span>
+          </Link>
         </div>
       </Popup>
     </Marker>
@@ -382,149 +432,6 @@ function FilterGroup({
         ))}
       </div>
     </div>
-  );
-}
-
-function RequestDetailsModal({
-  request,
-  onClose,
-}: {
-  request: HelpRequest;
-  onClose: () => void;
-}) {
-  const status = getStatusBadge(request.status);
-  const urgency = getUrgencyBadge(request.urgency);
-
-  // Prevent body scroll when modal is open
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    const originalPaddingRight = document.body.style.paddingRight;
-
-    // Prevent scrolling
-    document.body.style.overflow = 'hidden';
-
-    // Cleanup function
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.paddingRight = originalPaddingRight;
-    };
-  }, []);
-
-  return (
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm mb-0"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-lg -translate-x-1/2 -translate-y-1/2 px-4">
-        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-xl sm:p-6">
-          <div className="mb-4 flex items-start justify-between">
-            <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary sm:h-6 sm:w-6" />
-              <h3 className="text-base text-gray-900 sm:text-lg font-semibold">
-                รายละเอียดคำขอ
-              </h3>
-            </div>
-            <button
-              onClick={onClose}
-              className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-            >
-              <span className="text-2xl leading-none">×</span>
-            </button>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-gray-600 sm:h-5 sm:w-5" />
-                <span className="text-sm text-gray-900 sm:text-base font-medium">
-                  {request.name}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <BadgePill
-                  text={status.text}
-                  className={cn(
-                    status.bgClass,
-                    status.textClass,
-                    status.borderClass
-                  )}
-                />
-                <BadgePill
-                  text={urgency.text}
-                  className={cn(
-                    urgency.bgClass,
-                    urgency.textClass,
-                    urgency.borderClass
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 sm:p-4">
-              <div className="mb-2 text-xs text-gray-600 sm:text-sm font-medium">
-                ที่อยู่
-              </div>
-              <div className="text-sm text-gray-900 sm:text-base mb-3">
-                {request.location}
-              </div>
-              {request.latitude && request.longitude && (
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${request.latitude},${request.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-xs text-primary hover:text-[#e14a21] transition-colors sm:text-sm"
-                >
-                  <Navigation className="h-4 w-4" />
-                  <span className="font-medium">ดูตำแหน่งใน Google Maps</span>
-                  <span className="text-gray-400">
-                    ({request.latitude.toFixed(4)},{' '}
-                    {request.longitude.toFixed(4)})
-                  </span>
-                </a>
-              )}
-            </div>
-
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 sm:p-4">
-              <div className="mb-2 text-xs text-gray-600 sm:text-sm font-medium">
-                คำอธิบาย
-              </div>
-              <div className="text-sm text-gray-900 sm:text-base">
-                {request.description}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm sm:text-base">
-              <div className="flex items-center gap-2 text-gray-600">
-                <Package className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>
-                  {CATEGORY_LABELS[request.category] || request.category}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-500">
-                <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="text-xs sm:text-sm">
-                  {formatDate(request.createdAt)}
-                </span>
-              </div>
-            </div>
-
-            <div className="border-t border-gray-200 pt-4">
-              <a
-                href={`tel:${request.phone}`}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm text-white transition-colors hover:bg-[#e14a21] sm:text-base font-medium"
-              >
-                <Phone className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span>โทร {request.phone}</span>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
   );
 }
 
